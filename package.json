@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:istari.helloWorld"
+    "onCommand:istari.start"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "istari.helloWorld",
-        "title": "Hello World"
+        "command": "istari.start",
+        "title": "Istari Start"
       }
     ]
   },
