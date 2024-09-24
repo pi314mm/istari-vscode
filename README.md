@@ -1,6 +1,6 @@
-# istari README
+# istari-vscode README
 
-This is the README for your extension "istari". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "istari-vscode". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

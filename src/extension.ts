@@ -8,19 +8,18 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "istari" is now active!');
+	console.log('Congratulations, your extension "istari-vscode" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let start = vscode.commands.registerCommand('istari.start', () => {
+	let disposable = vscode.commands.registerCommand('istari-vscode.helloWorld', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
-		let terminal = vscode.window.createTerminal('istari');
-		terminal.sendText("sml @SMLload=~/Desktop/istari/ui/bin/istari-binary\r");
+		vscode.window.showInformationMessage('Hello World from istari!');
 	});
 
-	context.subscriptions.push(start);
+	context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated
