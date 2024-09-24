@@ -27,6 +27,7 @@ class IstariTerminal {
 				console.log('command:' + command)
 				switch(command[0]) {
 					case 'f': {
+						this.terminal.stdin?.write("\x06\n");
 						break;
 					}
 					case 'c': {
@@ -54,34 +55,32 @@ class IstariTerminal {
 		this.terminal.stdin?.write("\x05\n");
 	}
 
+	jumpToCursor(){
+		let cursorLine = this.editor.selection.active.line
+		if(cursorLine>this.currentLine){
+			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine,0), new vscode.Position(cursorLine,0))
+			console.log("sent:"+this.editor.document.getText(wordAtCurorRange))
+			this.sendLines(this.editor.document.getText(wordAtCurorRange));
+		}else{
+			this.terminal.stdin?.write(`\x01${cursorLine}\n`);
+		}
+	}
+
 	constructor(editor: vscode.TextEditor) {
 		this.editor = editor;
 
 		this.terminal = spawn("sml", ["@SMLload=/home/pi314mm/Desktop/istari/ui/bin/istarisrv-heapimg.amd64-linux"])
-		this.terminal.stdin?.write("\x06\n");
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 0;
 	}
 }
+let editor = vscode.window.activeTextEditor ;
+let istari = editor ? new IstariTerminal(editor) : undefined;
 
 export function activate(context: vscode.ExtensionContext) {
-	
 
-	let disposable = vscode.commands.registerCommand('istari.helloWorld', () => {
-
-		const editor = vscode.window.activeTextEditor ;
-		if (editor){
-			const istari = new IstariTerminal(editor);
-
-			
-			
-			const wordAtCurorRange = new vscode.Range(new vscode.Position(0,0), editor.selection.active)
-			istari.sendLines(editor.document.getText(wordAtCurorRange));
-			
-
-		} else {
-			console.log('No text window is active');
-		}
+	let disposable = vscode.commands.registerCommand('istari.jumpToCursor', () => {
+		istari?.jumpToCursor()
 	});
 
 	context.subscriptions.push(disposable);

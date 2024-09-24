@@ -9,15 +9,12 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:istari.helloWorld"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "istari.helloWorld",
-        "title": "Hello World"
+        "command": "istari.jumpToCursor",
+        "title": "Jump To Cursor"
       }
     ]
   },
