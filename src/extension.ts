@@ -6,26 +6,64 @@ import * as vscode from 'vscode';
 class IstariTerminal {
 	editor: vscode.TextEditor;
 	terminal: ChildProcess;
+	currentLine: number;
+	process(text:string) {
+		let commands = text.split('\x01');
+		let last = commands.pop();
+		if (last){
+			if(last.indexOf('\x02') > -1){
+				let x = last.split('\x02')
+				commands.push(x[0]+'\x02')
+				commands.push(x[1])
+			}else{
+				commands.push(last)
+			}
+		}
+		commands = commands.map(x => x.trimEnd()).filter(x => x.length > 0);
+		
+		commands.forEach((command) => {
+			if (command.endsWith('\x02')) {
+				command = command.split('\x02')[0];
+				console.log('command:' + command)
+				switch(command[0]) {
+					case 'f': {
+						break;
+					}
+					case 'c': {
+						this.currentLine = Number(command.substring(1));
+						break;
+					}
+					case 'w': {
+						break;
+					}
+					case 'r': {
+						break;
+					}
+					default:{
+						break;
+					}
+				}
+			}else{
+				console.log(command);
+			}
+		});
+	}
+
+	sendLines(text:string) {
+		this.terminal.stdin?.write(text);
+		this.terminal.stdin?.write("\x05\n");
+	}
+
 	constructor(editor: vscode.TextEditor) {
 		this.editor = editor;
 
 		this.terminal = spawn("sml", ["@SMLload=/home/pi314mm/Desktop/istari/ui/bin/istarisrv-heapimg.amd64-linux"])
-		//this.terminal = vscode.window.createTerminal("istari: " + editor.document.fileName);
-		//this.terminal.sendText("sml @SMLload=/home/pi314mm/Desktop/istari/ui/bin/istarisrv-heapimg.amd64-linux", true);
-		//this.terminal.sendText("\x06\n");
-		//const wordAtCurorRange = new vscode.Range(new vscode.Position(0,0), editor.selection.active)
-		//terminal.sendText(editor.document.getText(wordAtCurorRange));
-		//terminal.sendText("\x05\n");
 		this.terminal.stdin?.write("\x06\n");
-		this.terminal.stdout?.on('data', (message) => {
-				console.log(`${message}`);
-			}
-		)
+		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
+		this.currentLine = 0;
 	}
 }
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	
 
@@ -38,8 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
 			
 			
 			const wordAtCurorRange = new vscode.Range(new vscode.Position(0,0), editor.selection.active)
-			istari.terminal.stdin?.write(editor.document.getText(wordAtCurorRange));
-			istari.terminal.stdin?.write("\x05\n");
+			istari.sendLines(editor.document.getText(wordAtCurorRange));
 			
 
 		} else {
