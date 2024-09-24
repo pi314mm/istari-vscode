@@ -1,5 +1,5 @@
 {
-  "name": "istari-vscode",
+  "name": "istari",
   "displayName": "istari",
   "description": "",
   "version": "0.0.1",
@@ -10,13 +10,13 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:istari-vscode.helloWorld"
+    "onCommand:istari.helloWorld"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "istari-vscode.helloWorld",
+        "command": "istari.helloWorld",
         "title": "Hello World"
       }
     ]
