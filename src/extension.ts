@@ -48,6 +48,10 @@ class IstariTerminal {
 		});
 	}
 
+	interject(text:string) {
+		this.terminal.stdin?.write('\x02'+text+'\n');
+	}
+
 	sendLines(text:string) {
 		this.terminal.stdin?.write(text);
 		this.terminal.stdin?.write("\x05\n");
@@ -55,11 +59,11 @@ class IstariTerminal {
 
 	jumpToCursor(){
 		let cursorLine = this.editor.selection.active.line
-		if(cursorLine>this.currentLine){
+		console.log(`${this.currentLine},${cursorLine}`)
+		if(cursorLine>this.currentLine+1){
 			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine,0), new vscode.Position(cursorLine,0))
-			console.log("sent:"+this.editor.document.getText(wordAtCurorRange))
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
-		}else{
+		}else if(cursorLine <= this.currentLine){
 			this.terminal.stdin?.write(`\x01${cursorLine}\n`);
 		}
 	}
@@ -77,11 +81,14 @@ let istari = editor ? new IstariTerminal(editor) : undefined;
 
 export function activate(context: vscode.ExtensionContext) {
 
-	let disposable = vscode.commands.registerCommand('istari.jumpToCursor', () => {
+	let jumpToCursor = vscode.commands.registerCommand('istari.jumpToCursor', () => {
 		istari?.jumpToCursor()
 	});
+	context.subscriptions.push(jumpToCursor);
 
-	context.subscriptions.push(disposable);
+	let init = vscode.commands.registerCommand('istari.init', () => {
+	});
+	context.subscriptions.push(init);
 }
 
 // this method is called when your extension is deactivated

@@ -14,7 +14,11 @@
     "commands": [
       {
         "command": "istari.jumpToCursor",
-        "title": "Jump To Cursor"
+        "title": "Istari: Jump To Cursor"
+      },
+      {
+        "command": "istari.init",
+        "title": "Istari: Init"
       }
     ]
   },
