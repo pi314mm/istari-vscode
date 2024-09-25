@@ -63,7 +63,6 @@ class IstariTerminal {
 		let cursorLine = this.editor.selection.active.line;
 		if(cursorLine>this.currentLine-1){
 			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine-1,0), new vscode.Position(cursorLine,0));
-			console.log("sent:\n"+this.editor.document.getText(wordAtCurorRange))
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
 		}else if(cursorLine < this.currentLine-1){
 			this.terminal.stdin?.write(`\x01${cursorLine+1}\n`);
