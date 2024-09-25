@@ -1,6 +1,10 @@
 import { ChildProcess, spawn } from 'child_process';
 import * as vscode from 'vscode';
 
+const decorations = vscode.window.createTextEditorDecorationType({
+	backgroundColor:"green"
+})
+
 class IstariTerminal {
 	editor: vscode.TextEditor;
 	terminal: ChildProcess;
@@ -22,14 +26,17 @@ class IstariTerminal {
 		commands.forEach((command) => {
 			if (command.endsWith('\x02')) {
 				command = command.split('\x02')[0];
-				console.log('command:' + command)
+				//console.log('command:' + command)
 				switch(command[0]) {
 					case 'f': {
 						this.terminal.stdin?.write("\x06\n");
 						break;
 					}
 					case 'c': {
+						console.log('command:' + command);
 						this.currentLine = Number(command.substring(1));
+						let range = this.currentLine > 1 ? [new vscode.Range(new vscode.Position(0,0), this.editor.document.lineAt(this.currentLine-2).range.end)] : [];
+						this.editor.setDecorations(decorations,range)
 						break;
 					}
 					case 'w': {
@@ -61,10 +68,11 @@ class IstariTerminal {
 		let cursorLine = this.editor.selection.active.line;
 		console.log(`${this.currentLine},${cursorLine}`);
 		if(cursorLine>this.currentLine-1){
-			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine,0), new vscode.Position(cursorLine,0));
+			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine-1,0), new vscode.Position(cursorLine,0));
+			console.log("sent:\n"+this.editor.document.getText(wordAtCurorRange))
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
 		}else if(cursorLine < this.currentLine-1){
-			this.terminal.stdin?.write(`\x01${cursorLine}\n`);
+			this.terminal.stdin?.write(`\x01${cursorLine+1}\n`);
 		}
 	}
 
@@ -73,7 +81,7 @@ class IstariTerminal {
 
 		this.terminal = spawn("sml", ["@SMLload=/home/pi314mm/Desktop/istari/ui/bin/istarisrv-heapimg.amd64-linux"])
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
-		this.currentLine = 0;
+		this.currentLine = 1;
 	}
 }
 let editor = vscode.window.activeTextEditor ;
