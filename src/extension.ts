@@ -11,29 +11,24 @@ class IstariTerminal {
 	currentLine: number;
 	process(text:string) {
 		let commands = text.split('\x01');
-		let last = commands.pop();
-		if (last){
-			if(last.indexOf('\x02') > -1){
-				let x = last.split('\x02')
-				commands.push(x[0]+'\x02')
-				commands.push(x[1])
-			}else{
-				commands.push(last)
-			}
-		}
+		let spliter = (x:string) => {
+			let y = x.split('\x02');
+			y[0] = y[0]+'\x02';
+			return y
+		};
+		commands = commands.flatMap(x => (x.indexOf('\x02') > -1) ? spliter(x) : x);
 		commands = commands.map(x => x.trimEnd()).filter(x => x.length > 0);
 		
 		commands.forEach((command) => {
 			if (command.endsWith('\x02')) {
 				command = command.split('\x02')[0];
-				//console.log('command:' + command)
+				console.log('command:' + command)
 				switch(command[0]) {
 					case 'f': {
 						this.terminal.stdin?.write("\x06\n");
 						break;
 					}
 					case 'c': {
-						console.log('command:' + command);
 						this.currentLine = Number(command.substring(1));
 						let range = this.currentLine > 1 ? [new vscode.Range(new vscode.Position(0,0), this.editor.document.lineAt(this.currentLine-2).range.end)] : [];
 						this.editor.setDecorations(decorations,range)
@@ -66,7 +61,6 @@ class IstariTerminal {
 
 	jumpToCursor(){
 		let cursorLine = this.editor.selection.active.line;
-		console.log(`${this.currentLine},${cursorLine}`);
 		if(cursorLine>this.currentLine-1){
 			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine-1,0), new vscode.Position(cursorLine,0));
 			console.log("sent:\n"+this.editor.document.getText(wordAtCurorRange))
