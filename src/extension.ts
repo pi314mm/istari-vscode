@@ -45,7 +45,7 @@ class IstariTerminal {
 					}
 				}
 			}else{
-				console.log(command);
+				output.append(command+"\n");
 			}
 		});
 	}
@@ -79,6 +79,7 @@ class IstariTerminal {
 }
 let editor = vscode.window.activeTextEditor ;
 let istari = editor ? new IstariTerminal(editor) : undefined;
+let output = vscode.window.createOutputChannel("istari")
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -88,6 +89,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(jumpToCursor);
 
 	let init = vscode.commands.registerCommand('istari.init', () => {
+		editor = vscode.window.activeTextEditor ;
+		istari = editor ? new IstariTerminal(editor) : undefined;
 	});
 	context.subscriptions.push(init);
 }
