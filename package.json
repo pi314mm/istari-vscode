@@ -11,16 +11,59 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "istari",
+        "extensions": [".ist"]
+      }
+    ],
     "commands": [
       {
         "command": "istari.jumpToCursor",
-        "title": "Istari: Jump To Cursor"
+        "title": "Istari: Jump To Cursor",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "istari.prevLine",
+        "title": "Istari: Previous Line",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "istari.nextLine",
+        "title": "Istari: Next Line",
+        "icon": "$(arrow-down)"
       },
       {
         "command": "istari.init",
         "title": "Istari: Init"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "istari.jumpToCursor",
+        "key": "ctrl+enter",
+        "when": "resourceLangId == istari"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.jumpToCursor",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.prevLine",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.nextLine",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

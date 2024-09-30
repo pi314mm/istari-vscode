@@ -70,6 +70,23 @@ class IstariTerminal {
 		}
 	}
 
+	nextLine(){
+		if(this.currentLine < this.editor.document.lineCount){
+			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine-1,0), new vscode.Position(this.currentLine,0));
+			this.sendLines(this.editor.document.getText(wordAtCurorRange));
+		}else{
+			console.log("error")
+		}
+	}
+
+	prevLine(){
+		if(this.currentLine > 1){
+			this.terminal.stdin?.write(`\x01${this.currentLine-1}\n`);
+		}else{
+			console.log("error")
+		}
+	}
+
 	constructor(editor: vscode.TextEditor) {
 		this.editor = editor;
 
@@ -88,6 +105,16 @@ export function activate(context: vscode.ExtensionContext) {
 		istari?.jumpToCursor()
 	});
 	context.subscriptions.push(jumpToCursor);
+
+	let prevLine = vscode.commands.registerCommand('istari.prevLine', () => {
+		istari?.prevLine()
+	});
+	context.subscriptions.push(prevLine);
+
+	let nextLine = vscode.commands.registerCommand('istari.nextLine', () => {
+		istari?.nextLine()
+	});
+	context.subscriptions.push(nextLine);
 
 	let init = vscode.commands.registerCommand('istari.init', () => {
 		editor = vscode.window.activeTextEditor ;
