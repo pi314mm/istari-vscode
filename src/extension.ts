@@ -2,7 +2,8 @@ import { ChildProcess, spawn } from 'child_process';
 import * as vscode from 'vscode';
 
 const decorations = vscode.window.createTextEditorDecorationType({
-	backgroundColor:"green"
+	backgroundColor:"green",
+	isWholeLine:true,
 })
 
 class IstariTerminal {
