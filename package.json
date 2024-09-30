@@ -28,7 +28,7 @@
         "istari.istariLocation": {
           "type": "string",
           "default": "",
-          "description": "Specifies the folder path containing the tsserver and lib*.d.ts files to use."
+          "description": "File location of starisrv-heapimg"
         }
       }
     },
