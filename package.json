@@ -17,6 +17,21 @@
         "extensions": [".ist"]
       }
     ],
+    "configuration": {
+      "title": "Locations",
+      "properties": {
+        "istari.smlLocation": {
+          "type": "string",
+          "default": "sml",
+          "description": "Command to run sml"
+        },
+        "istari.istariLocation": {
+          "type": "string",
+          "default": "",
+          "description": "Specifies the folder path containing the tsserver and lib*.d.ts files to use."
+        }
+      }
+    },
     "commands": [
       {
         "command": "istari.jumpToCursor",

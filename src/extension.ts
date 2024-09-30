@@ -1,4 +1,5 @@
 import { ChildProcess, spawn } from 'child_process';
+import { get } from 'http';
 import * as vscode from 'vscode';
 
 const decorations = vscode.window.createTextEditorDecorationType({
@@ -89,8 +90,9 @@ class IstariTerminal {
 
 	constructor(editor: vscode.TextEditor) {
 		this.editor = editor;
-
-		this.terminal = spawn("sml", ["@SMLload=/home/pi314mm/Desktop/istari/ui/bin/istarisrv-heapimg.amd64-linux"])
+		let sml = vscode.workspace.getConfiguration().get<string>('istari.smlLocation')!;
+		let istari = vscode.workspace.getConfiguration().get<string>('istari.istariLocation')!;
+		this.terminal = spawn(sml, ["@SMLload="+istari])
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 1;
 	}
