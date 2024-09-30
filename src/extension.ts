@@ -92,7 +92,7 @@ class IstariTerminal {
 		this.editor = editor;
 		let sml = vscode.workspace.getConfiguration().get<string>('istari.smlLocation')!;
 		let istari = vscode.workspace.getConfiguration().get<string>('istari.istariLocation')!;
-		this.terminal = spawn(sml, ["@SMLload="+istari])
+		this.terminal = spawn(sml, ["@SMLload="+istari], {shell:true})
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 1;
 	}
