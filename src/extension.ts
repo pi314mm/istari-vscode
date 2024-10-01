@@ -1,6 +1,7 @@
 import { ChildProcess, spawn } from 'child_process';
 import { get } from 'http';
 import * as vscode from 'vscode';
+import { dirname } from 'path';
 
 const decorations = vscode.window.createTextEditorDecorationType({
 	backgroundColor:"green",
@@ -92,7 +93,8 @@ class IstariTerminal {
 		this.editor = editor;
 		let sml = vscode.workspace.getConfiguration().get<string>('istari.smlLocation')!;
 		let istari = vscode.workspace.getConfiguration().get<string>('istari.istariLocation')!;
-		this.terminal = spawn(sml, ["@SMLload="+istari], {shell:true})
+		let cwd =  dirname(editor.document.fileName)
+		this.terminal = spawn(sml, ["@SMLload="+istari], {cwd:cwd, shell:true})
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 1;
 	}
