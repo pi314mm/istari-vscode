@@ -93,7 +93,7 @@ class IstariTerminal {
 		this.editor = editor;
 		let sml = vscode.workspace.getConfiguration().get<string>('istari.smlLocation')!;
 		let istari = vscode.workspace.getConfiguration().get<string>('istari.istariLocation')!;
-		let cwd =  dirname(editor.document.fileName)
+		let cwd = dirname(editor.document.fileName)
 		this.terminal = spawn(sml, ["@SMLload="+istari], {cwd:cwd, shell:true})
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 1;
@@ -119,6 +119,15 @@ export function activate(context: vscode.ExtensionContext) {
 		istari?.nextLine()
 	});
 	context.subscriptions.push(nextLine);
+
+	let getType = vscode.commands.registerCommand('istari.getType', () => {
+		vscode.window.showInputBox({title:"Get the type of an expression", prompt:"expression", ignoreFocusOut:true}).then((expr) => {
+			if (expr) {
+				istari?.interject("Report.showType (parseLongident /" + expr + "/);")
+			}
+		});
+	});
+	context.subscriptions.push(getType);
 
 	let init = vscode.commands.registerCommand('istari.init', () => {
 		editor = vscode.window.activeTextEditor ;

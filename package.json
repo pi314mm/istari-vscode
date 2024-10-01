@@ -34,11 +34,6 @@
     },
     "commands": [
       {
-        "command": "istari.jumpToCursor",
-        "title": "Istari: Jump To Cursor",
-        "icon": "$(arrow-right)"
-      },
-      {
         "command": "istari.prevLine",
         "title": "Istari: Previous Line",
         "icon": "$(arrow-up)"
@@ -49,8 +44,19 @@
         "icon": "$(arrow-down)"
       },
       {
+        "command": "istari.jumpToCursor",
+        "title": "Istari: Jump To Cursor",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "istari.getType",
+        "title": "Istari: Get Type",
+        "icon": "$(comment-discussion)"
+      },
+      {
         "command": "istari.init",
-        "title": "Istari: Init"
+        "title": "Istari: Init",
+        "icon": "$(debug-restart)"
       }
     ],
     "keybindings": [
@@ -75,6 +81,16 @@
         {
           "when": "resourceLangId == istari",
           "command": "istari.nextLine",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.getType",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.init",
           "group": "navigation"
         }
       ]
