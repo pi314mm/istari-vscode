@@ -98,6 +98,16 @@ class IstariTerminal {
 		this.terminal.stdout?.on('data', (data) => {this.process(data.toString())});
 		this.currentLine = 1;
 	}
+
+	edit(e : vscode.TextDocumentChangeEvent){
+		if (e.document == this.editor.document) {
+			if (e.contentChanges.length > 0) {
+				if(e.contentChanges[0].range.start.line < this.currentLine-1){
+					this.terminal.stdin?.write(`\x01${e.contentChanges[0].range.start.line+1}\n`);
+				}
+			}
+		}
+	}
 }
 let editor = vscode.window.activeTextEditor ;
 let istari = editor ? new IstariTerminal(editor) : undefined;
@@ -134,6 +144,10 @@ export function activate(context: vscode.ExtensionContext) {
 		istari = editor ? new IstariTerminal(editor) : undefined;
 	});
 	context.subscriptions.push(init);
+
+	vscode.workspace.onDidChangeTextDocument(e => {
+		istari?.edit(e)
+	})
 }
 
 // this method is called when your extension is deactivated
