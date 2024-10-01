@@ -56,7 +56,7 @@
       {
         "command": "istari.init",
         "title": "Istari: Init",
-        "icon": "$(debug-restart)"
+        "icon": "$(refresh)"
       }
     ],
     "keybindings": [
