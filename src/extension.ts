@@ -139,6 +139,16 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(getType);
 
+	let search = vscode.commands.registerCommand('istari.search', () => {
+		vscode.window.showInputBox({title:"Get the type of an expression", prompt:"expression", ignoreFocusOut:true}).then((expr) => {
+			if (expr) {
+				istari?.interject("Report.search (parseConstants /" + expr + "/) [];")
+			}
+		});
+	});
+	context.subscriptions.push(search);
+	
+
 	let init = vscode.commands.registerCommand('istari.init', () => {
 		editor = vscode.window.activeTextEditor ;
 		istari = editor ? new IstariTerminal(editor) : undefined;

@@ -54,6 +54,11 @@
         "icon": "$(comment-discussion)"
       },
       {
+        "command": "istari.search",
+        "title": "Istari: Search Constant",
+        "icon": "$(comment-discussion)"
+      },
+      {
         "command": "istari.init",
         "title": "Istari: Init",
         "icon": "$(refresh)"
@@ -86,6 +91,11 @@
         {
           "when": "resourceLangId == istari",
           "command": "istari.getType",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.search",
           "group": "navigation"
         },
         {
