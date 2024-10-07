@@ -1,0 +1,13 @@
+{
+    "scopeName": "source.ist",
+    "patterns": [{ "include": "#FullProgram" }, { "include": "#IncProgram"}, { "include": "#Imports" }],
+    "repository": {
+      "FullProgram": {
+        "patterns": [{ "include": "#Directives" }]
+      },
+      "Directives": {
+        "patterns": [{ "include": "#Directives" }]
+      }
+    }
+  }
+  

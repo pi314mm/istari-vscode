@@ -17,6 +17,13 @@
         "extensions": [".ist"]
       }
     ],
+    "grammars": [
+      {
+        "language": "istari",
+        "scopeName": "source.ist",
+        "path": "./syntaxes/ist.tmGrammar.json"
+      }
+    ],
     "configuration": {
       "title": "Locations",
       "properties": {
