@@ -69,12 +69,52 @@
         "command": "istari.init",
         "title": "Istari: Init",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "istari.jumpCursor",
+        "title": "Istari: Jump Cursor to Verifed",
+        "icon": "$(arrow-right)"
       }
     ],
     "keybindings": [
       {
+        "command": "istari.nextLine",
+        "key": "ctrl+c ctrl+n",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.nextLine",
+        "key": "f4",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.prevLine",
+        "key": "ctrl+c ctrl+p",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.prevLine",
+        "key": "ctrl+c ctrl+u",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.prevLine",
+        "key": "f5",
+        "when": "resourceLangId == istari"
+      },
+      {
         "command": "istari.jumpToCursor",
         "key": "ctrl+enter",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.jumpToCursor",
+        "key": "ctrl+c enter",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.jumpCursor",
+        "key": "ctrl+c .",
         "when": "resourceLangId == istari"
       }
     ],

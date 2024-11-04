@@ -155,6 +155,16 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(init);
 
+	let jumpCursor = vscode.commands.registerCommand('istari.jumpCursor', () => {
+		if (istari){
+			let pos = new vscode.Position(istari.currentLine-1,0);
+			istari.editor.selection = new vscode.Selection(pos, pos);
+			istari.editor.revealRange(new vscode.Range(pos,pos));
+		}
+	});
+	context.subscriptions.push(jumpCursor);
+
+
 	vscode.workspace.onDidChangeTextDocument(e => {
 		istari?.edit(e)
 	})
