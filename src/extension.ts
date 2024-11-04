@@ -128,15 +128,23 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.getType', () => {
-		vscode.window.showInputBox({ title: "Get the type of an expression", prompt: "expression", ignoreFocusOut: true }).then((expr) => {
+		vscode.window.showInputBox({ title: "Get the type of a constant", prompt: "constant", ignoreFocusOut: true }).then((expr) => {
 			if (expr) {
 				istari?.interject("Report.showType (parseLongident /" + expr + "/);")
 			}
 		});
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('istari.getDefinition', () => {
+		vscode.window.showInputBox({ title: "Get the definition of a constant", prompt: "constant", ignoreFocusOut: true }).then((expr) => {
+			if (expr) {
+				istari?.interject("Report.show (parseLongident /" + expr + "/);")
+			}
+		});
+	}));
+
 	context.subscriptions.push(vscode.commands.registerCommand('istari.search', () => {
-		vscode.window.showInputBox({ title: "Get the type of an expression", prompt: "expression", ignoreFocusOut: true }).then((expr) => {
+		vscode.window.showInputBox({ title: "Find all constants that mention targets", prompt: "targets", ignoreFocusOut: true }).then((expr) => {
 			if (expr) {
 				istari?.interject("Report.search (parseConstants /" + expr + "/) [];")
 			}
@@ -169,6 +177,25 @@ export function activate(context: vscode.ExtensionContext) {
 		istari?.interject("Prover.show ();")
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('istari.showCurrentGoalsVerbosely', () => {
+		istari?.interject("Prover.showFull ();")
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.details', () => {
+		istari?.interject("Prover.detail ();")
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.listConstants', () => {
+		istari?.interject("Report.showAll ();")
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.listConstantsModule', () => {
+		vscode.window.showInputBox({ title: "Module to list constants from", prompt: "module", ignoreFocusOut: true }).then((code) => {
+			if (code) {
+				istari?.interject("Report.showModule (parseLongident /" + code + "/);")
+			}
+		});
+	}));
 
 	vscode.workspace.onDidChangeTextDocument(e => {
 		istari?.edit(e)

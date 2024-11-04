@@ -59,12 +59,11 @@
       },
       {
         "command": "istari.getType",
-        "title": "Istari: Get Type",
-        "icon": "$(comment-discussion)"
+        "title": "Istari: Get Type of a Constant"
       },
       {
         "command": "istari.search",
-        "title": "Istari: Search Constant",
+        "title": "Istari: Find All Constants that Mention Targets",
         "icon": "$(comment-discussion)"
       },
       {
@@ -83,6 +82,27 @@
       {
         "command": "istari.showCurrentGoals",
         "title": "Istari: Show Current Goals"
+      },
+      {
+        "command": "istari.showCurrentGoalsVerbosely",
+        "title": "Istari: Show Current Goals Verbosely"
+      },
+      {
+        "command": "istari.details",
+        "title": "Istari: Give Detail on Current Goal"
+      },
+      {
+        "command": "istari.getDefinition",
+        "title": "Istari: Get Definition of a Constant",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "istari.listConstantsModule",
+        "title": "Istari: List All Constants in an Istari Module"
+      },
+      {
+        "command": "istari.listConstants",
+        "title": "Istari: List All Constants"
       }
     ],
     "keybindings": [
@@ -135,6 +155,41 @@
         "command": "istari.showCurrentGoals",
         "key": "ctrl+c s",
         "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.showCurrentGoalsVerbosely",
+        "key": "ctrl+c Shift+s",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.details",
+        "key": "ctrl+c ctrl+d",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.getType",
+        "key": "ctrl+c r t",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.getDefinition",
+        "key": "ctrl+c r s",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.listConstantsModule",
+        "key": "ctrl+c r m",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.listConstants",
+        "key": "ctrl+c r a",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.search",
+        "key": "ctrl+c r f",
+        "when": "resourceLangId == istari"
       }
     ],
     "menus": {
@@ -156,7 +211,7 @@
         },
         {
           "when": "resourceLangId == istari",
-          "command": "istari.getType",
+          "command": "istari.getDefinition",
           "group": "navigation"
         },
         {
