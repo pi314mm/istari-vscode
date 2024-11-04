@@ -103,6 +103,14 @@
       {
         "command": "istari.listConstants",
         "title": "Istari: List All Constants"
+      },
+      {
+        "command": "istari.showImplicitArguments",
+        "title": "Istari: Show Implicit Arguments"
+      },
+      {
+        "command": "istari.showSubstitutions",
+        "title": "Istari: Show Substitutions"
       }
     ],
     "keybindings": [
@@ -189,6 +197,16 @@
       {
         "command": "istari.search",
         "key": "ctrl+c r f",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.showImplicitArguments",
+        "key": "ctrl+c c i",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.showSubstitutions",
+        "key": "ctrl+c c s",
         "when": "resourceLangId == istari"
       }
     ],

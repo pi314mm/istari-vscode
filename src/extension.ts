@@ -197,6 +197,14 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('istari.showImplicitArguments', () => {
+		istari?.interject("Show.showImplicits := not (!Show.showImplicits); if !Show.showImplicits then print \"Display of implicit arguments enabled.\\n\" else print \"Display of implicit arguments disabled.\\n\";")
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.showSubstitutions', () => {
+		istari?.interject("Show.showSubstitutions := not (!Show.showSubstitutions); if !Show.showSubstitutions then print \"Display of evar substitutions enabled.\\n\" else print \"Display of evar substitutions disabled.\\n\";")
+	}));
+
 	vscode.workspace.onDidChangeTextDocument(e => {
 		istari?.edit(e)
 	})
