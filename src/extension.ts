@@ -115,54 +115,59 @@ let output = vscode.window.createOutputChannel("istari")
 
 export function activate(context: vscode.ExtensionContext) {
 
-	let jumpToCursor = vscode.commands.registerCommand('istari.jumpToCursor', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.jumpToCursor', () => {
 		istari?.jumpToCursor()
-	});
-	context.subscriptions.push(jumpToCursor);
+	}));
 
-	let prevLine = vscode.commands.registerCommand('istari.prevLine', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.prevLine', () => {
 		istari?.prevLine()
-	});
-	context.subscriptions.push(prevLine);
+	}));
 
-	let nextLine = vscode.commands.registerCommand('istari.nextLine', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.nextLine', () => {
 		istari?.nextLine()
-	});
-	context.subscriptions.push(nextLine);
+	}));
 
-	let getType = vscode.commands.registerCommand('istari.getType', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.getType', () => {
 		vscode.window.showInputBox({ title: "Get the type of an expression", prompt: "expression", ignoreFocusOut: true }).then((expr) => {
 			if (expr) {
 				istari?.interject("Report.showType (parseLongident /" + expr + "/);")
 			}
 		});
-	});
-	context.subscriptions.push(getType);
+	}));
 
-	let search = vscode.commands.registerCommand('istari.search', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.search', () => {
 		vscode.window.showInputBox({ title: "Get the type of an expression", prompt: "expression", ignoreFocusOut: true }).then((expr) => {
 			if (expr) {
 				istari?.interject("Report.search (parseConstants /" + expr + "/) [];")
 			}
 		});
-	});
-	context.subscriptions.push(search);
+	}));
 
 
-	let init = vscode.commands.registerCommand('istari.init', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.init', () => {
 		editor = vscode.window.activeTextEditor;
 		istari = editor ? new IstariTerminal(editor) : undefined;
-	});
-	context.subscriptions.push(init);
+	}));
 
-	let jumpCursor = vscode.commands.registerCommand('istari.jumpCursor', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('istari.jumpCursor', () => {
 		if (istari) {
 			let pos = new vscode.Position(istari.currentLine - 1, 0);
 			istari.editor.selection = new vscode.Selection(pos, pos);
 			istari.editor.revealRange(new vscode.Range(pos, pos));
 		}
-	});
-	context.subscriptions.push(jumpCursor);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.interject', () => {
+		vscode.window.showInputBox({ title: "Interject with IML code", prompt: "IML code", ignoreFocusOut: true }).then((code) => {
+			if (code) {
+				istari?.interject(code)
+			}
+		});
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.showCurrentGoals', () => {
+		istari?.interject("Prover.show ();")
+	}));
 
 
 	vscode.workspace.onDidChangeTextDocument(e => {

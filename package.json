@@ -74,8 +74,15 @@
       },
       {
         "command": "istari.jumpCursor",
-        "title": "Istari: Jump Cursor to Verifed",
-        "icon": "$(arrow-right)"
+        "title": "Istari: Jump Cursor to Verifed"
+      },
+      {
+        "command": "istari.interject",
+        "title": "Istari: Interject with IML Code"
+      },
+      {
+        "command": "istari.showCurrentGoals",
+        "title": "Istari: Show Current Goals"
       }
     ],
     "keybindings": [
@@ -117,6 +124,16 @@
       {
         "command": "istari.jumpCursor",
         "key": "ctrl+c .",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.interject",
+        "key": "ctrl+c x",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.showCurrentGoals",
+        "key": "ctrl+c s",
         "when": "resourceLangId == istari"
       }
     ],
