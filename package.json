@@ -116,7 +116,7 @@
     "keybindings": [
       {
         "command": "istari.nextLine",
-        "key": "ctrl+c ctrl+n",
+        "key": "ctrl+i ctrl+n",
         "when": "resourceLangId == istari"
       },
       {
@@ -126,12 +126,12 @@
       },
       {
         "command": "istari.prevLine",
-        "key": "ctrl+c ctrl+p",
+        "key": "ctrl+i ctrl+p",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.prevLine",
-        "key": "ctrl+c ctrl+u",
+        "key": "ctrl+i ctrl+u",
         "when": "resourceLangId == istari"
       },
       {
@@ -146,67 +146,67 @@
       },
       {
         "command": "istari.jumpToCursor",
-        "key": "ctrl+c enter",
+        "key": "ctrl+i enter",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.jumpCursor",
-        "key": "ctrl+c .",
+        "key": "ctrl+i .",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.interject",
-        "key": "ctrl+c x",
+        "key": "ctrl+i x",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.showCurrentGoals",
-        "key": "ctrl+c s",
+        "key": "ctrl+i s",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.showCurrentGoalsVerbosely",
-        "key": "ctrl+c Shift+s",
+        "key": "ctrl+i Shift+s",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.details",
-        "key": "ctrl+c ctrl+d",
+        "key": "ctrl+i ctrl+d",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.getType",
-        "key": "ctrl+c r t",
+        "key": "ctrl+i r t",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.getDefinition",
-        "key": "ctrl+c r s",
+        "key": "ctrl+i r s",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.listConstantsModule",
-        "key": "ctrl+c r m",
+        "key": "ctrl+i r m",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.listConstants",
-        "key": "ctrl+c r a",
+        "key": "ctrl+i r a",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.search",
-        "key": "ctrl+c r f",
+        "key": "ctrl+i r f",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.showImplicitArguments",
-        "key": "ctrl+c c i",
+        "key": "ctrl+i c i",
         "when": "resourceLangId == istari"
       },
       {
         "command": "istari.showSubstitutions",
-        "key": "ctrl+c c s",
+        "key": "ctrl+i c s",
         "when": "resourceLangId == istari"
       }
     ],
