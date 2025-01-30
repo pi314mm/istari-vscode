@@ -2,8 +2,8 @@
   "name": "istari",
   "displayName": "istari",
   "description": "Istari plugin for vscode",
-  "publisher" : "pi314mm",
-  "version": "0.0.1",
+  "publisher": "pi314mm",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.93.0"
   },
