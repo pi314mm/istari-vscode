@@ -10,14 +10,21 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://github.com/pi314mm/istari-vscode"
+  },
   "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:istari"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "istari",
         "extensions": [
           ".ist"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -28,7 +35,7 @@
       }
     ],
     "configuration": {
-      "title": "Locations",
+      "title": "Istari Image Location",
       "properties": {
         "istari.smlLocation": {
           "type": "string",
