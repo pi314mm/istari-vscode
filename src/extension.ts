@@ -78,10 +78,10 @@ let webviewHTML = `
 						const mainText = document.getElementById('main_text');
 						if (mainText) {
 console.log(message.text);
-mainText.innerHTML += "<hr>" + message.text.replace(/\\n(\s*)/g, function(_, spaces) {
+mainText.innerHTML += "<hr><pre>" + message.text.replace(/\\n(\s*)/g, function(_, spaces) {
 console.log('spaces', spaces, 'end');
     return "<br>" + spaces.replace(/ /g, "&nbsp;");
-});						}
+}) + "</pre>";						}
 						break;
 					}
 					case 'changeStatus': {
