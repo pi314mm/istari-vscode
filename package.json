@@ -46,6 +46,11 @@
           "type": "string",
           "default": "",
           "description": "File location of starisrv-heapimg"
+        },
+        "istari.showTypesInDocumentOutline": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether type information is shown in the outline, this is costly. Turn off if istari is slow."
         }
       }
     },

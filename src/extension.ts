@@ -5,10 +5,10 @@ import { dirname } from 'path';
 import path = require('path');
 import { assert, time } from 'console';
 
-const decorations = vscode.window.createTextEditorDecorationType({
-	backgroundColor: "green",
-	isWholeLine: true,
-});
+// const decorations = vscode.window.createTextEditorDecorationType({
+// 	backgroundColor: "green",
+// 	isWholeLine: true,
+// });
     // Inline SVG as a string
     const blueDotSvg = `
        <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -25,7 +25,13 @@ const decorations = vscode.window.createTextEditorDecorationType({
 const decorationType2 = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.parse(blueDotSvgBase64),
 	gutterIconSize: '80%',
-	overviewRulerLane: vscode.OverviewRulerLane.Right,
+	// all red
+	// overviewRulerLane: vscode.OverviewRulerLane.Right,
+	// overviewRulerColor: 'rgba(255,0,0,0.5)',
+	// // isWholeLine: true,
+	// backgroundColor: 'rgba(255,0,0,0.5)',
+	// borderWidth: '1px',
+	// borderStyle: 'solid',
 });
 
 const decorationType = vscode.window.createTextEditorDecorationType({
@@ -35,6 +41,7 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 
 	isWholeLine: true,
 	backgroundColor: 'rgba(0, 122, 204, 0.1)', // VS Code blue
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 
 	// before : {
 		
@@ -77,12 +84,19 @@ let webviewHTML = `
 					case 'appendText': {
 						const mainText = document.getElementById('main_text');
 						if (mainText) {
-console.log(message.text);
+// console.log(message.text);
 mainText.innerHTML += "<hr><pre>" + message.text.replace(/\\n(\s*)/g, function(_, spaces) {
-console.log('spaces', spaces, 'end');
+// console.log('spaces', spaces, 'end');
     return "<br>" + spaces.replace(/ /g, "&nbsp;");
 }) + "</pre>";						}
 						break;
+					}
+					case 'resetText': {
+						const mainText = document.getElementById('main_text');
+						if (mainText) {
+							mainText.innerHTML = '';
+						}
+						break
 					}
 					case 'changeStatus': {
 						const status = document.getElementById('status');
@@ -98,6 +112,13 @@ console.log('spaces', spaces, 'end');
 						}
 						break;
 					}
+					case 'changeCursor': {
+						const cursor = document.getElementById('cursor');
+						if (cursor) {
+							cursor.innerHTML = message.text;
+						}
+						break;
+					}
 				}
 			});
 			</script>
@@ -105,7 +126,9 @@ console.log('spaces', spaces, 'end');
 			<div style="position: fixed; top: 0; left: 0; width: 100%; padding-left: 2px; opacity: 1; 
 			background-color: rgb(255, 255, 255);
 			 z-index: 10;">
-				Status: <span id="status"></span> | Tasks: <span id="tasks"></span>
+				Status: <span id="status"></span> 
+				| Tasks: <span id="tasks"></span>
+				| Cursor: <span id="cursor"></span>
 			</div>
 			<div id="main_text" style="margin-top: 2em"></div>
 			</body>
@@ -125,6 +148,7 @@ class IstariWebview {
 		this.webview.onDidChangeViewState((e) => {
 			if (e.webviewPanel.visible) {
 				this.webview.webview.html = webviewHTML;
+				this.webview.webview.postMessage({ command: 'resetText' });
 				this.messages.forEach((message) => {
 					this.webview.webview.postMessage(message);
 				});
@@ -134,7 +158,12 @@ class IstariWebview {
 	}
 
 	postMessage(message: any) {
-		this.messages.push(message);
+		if (message.command === 'appendText') {
+			this.messages.push(message);
+			if(this.messages.length > 100){
+				this.messages.shift();
+			}
+		}
 		this.webview.webview.postMessage(message);
 	}
 
@@ -151,6 +180,10 @@ class IstariWebview {
 
 	changeTasks(text: string) {
 		this.postMessage({ command: 'changeTasks', text: text });
+	}
+
+	changeCursor(text: string) {
+		this.postMessage({ command: 'changeCursor', text: text });
 	}
 
 }
@@ -378,8 +411,8 @@ class IstariUI {
 	}
 
 	tasksUpdated() {
-		if (this.terminal.tasks.length > 0) {
-			this.webview.changeTasks(this.terminal.tasks.length.toString() + " Remaining"); 
+		if (this.terminal.tasks.length > 0 || this.terminal.taskInflight) {
+			this.webview.changeTasks((this.terminal.tasks.length + 1).toString() + " Remaining"); 
 		} else {
 			this.webview.changeTasks("Ready");
 		}
@@ -392,6 +425,7 @@ class IstariUI {
 		] : [];
 		this.editor.setDecorations(decorationType, range);
 		this.editor.setDecorations(decorationType2, range);
+		this.webview.changeCursor(this.currentLine.toString());
 	}
 
 	setEditor(editor: vscode.TextEditor) {
@@ -446,6 +480,23 @@ class IstariUI {
 		this.terminal.enqueueTask(new IstariTask(IstariInputCommand.interject, text, callback));
 	}
 
+	getTypeForConstant(constant: string, callback: (type: string) => void) {
+		this.interjectWithCallback("Report.showType (parseLongident /" + constant + "/);", (data) => {
+			callback(data);
+			return true;
+		});
+	}
+
+	getTypeAndDefinitionForConstant(constant: string, callback: (type: string, definition: string) => void) {
+		this.getTypeForConstant(constant, (data) => {
+			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (definition) => {
+				callback(data, definition);
+				return true;
+			});
+			return true;
+		});
+	}
+
 	sendLines(text: string) {
 		this.terminal.enqueueTask(new IstariTask(IstariInputCommand.textInput, text, (data) => {
 			this.webview.appendText(data);
@@ -493,7 +544,16 @@ class IstariUI {
 	edit(e: vscode.TextDocumentChangeEvent) {
 		if (e.document === this.editor.document) {
 			if (e.contentChanges.length > 0) {
-				if (e.contentChanges[0].range.start.line < this.currentLine - 1) {
+				if (e.contentChanges[0].range.end.line < this.currentLine - 1) {
+					// skip if just inserting a trailing newline (possibly followed by spaces) right before this line
+					if (e.contentChanges[0].text.includes("\n") 
+						&& e.contentChanges[0].text.trim() === ""
+						&& e.contentChanges[0].range.end.line === this.currentLine - 2
+						// ensures line after insertion is empty to prevent insertion in the middle
+						&& e.document.lineAt(e.contentChanges[0].range.end.line+1).text.trim() === "" 
+					){
+						return;
+					}
 					this.rewindToLine(e.contentChanges[0].range.start.line + 1);
 				}
 			}
@@ -545,50 +605,177 @@ function registerDoc(doc: vscode.TextDocument, editor: vscode.TextEditor | undef
 	}
 }
 
+type DocSymbolType = 'define' | 'lemma' | 'typedef' | 'defineInd' | "";
+type DocSymbol = {
+	word : string,
+	kind : DocSymbolType,
+	line : number,
+	column : number,
+};
+function getDocumentSymbols(document: vscode.TextDocument) : DocSymbol[] {
+	let symbols: DocSymbol[] = [];
+	for (let i = 0; i < document.lineCount; i++) {
+		let line = document.lineAt(i).text;
+		let symbolName = "";
+		let symbolKind : DocSymbolType = "";
+		let col = 0;
+		if (line.startsWith("define /")) {
+			symbolName = line.substring(8).split(/[\/\s]/)[0];
+			symbolKind = "define";
+			col = 8;
+		} else if (line.startsWith("lemma \"")) {
+			symbolName = line.substring(7).split(/["\s]/)[0];
+			symbolKind = "lemma";
+			col = 7;
+		} else if (line.startsWith("typedef")) {
+			try {
+				// skip to of
+				while(!line.includes("of") ) {
+					i++;
+					line = document.lineAt(i).text;
+				}
+				if (line.trim().endsWith("of") ) {
+					i++;
+					line = document.lineAt(i).text;
+				}
+				while (line.trim() === "" ) {
+					i++;
+					line = document.lineAt(i).text;
+				}
+				symbolName = line.trim().split(/\s/)[0];
+				symbolKind = "typedef";
+				col = line.indexOf(symbolName);
+			} catch {
+				symbolName = "";
+			}
+		} else if (line.startsWith("defineInd")) {
+			try {
+				i ++;
+				line = document.lineAt(i).text;
+				let word = null; 
+				// loop find (word) : in this line
+				while ((word=line.trim().match(/^\s*(\w+)\s*:/)) === null) {
+					i++;
+					line = document.lineAt(i).text;
+					if(line.includes(";")){
+						break;
+					}
+				}
+				if (word) {
+					word = word[1];
+					symbolName = word;
+					symbolKind = "defineInd";
+					col = line.indexOf(word);
+				}
+			} catch {
+				symbolName = "";
+			}
+		}
+		if (symbolName && symbolKind) {
+			symbols.push({word: symbolName, kind: symbolKind, line: i, column: col});
+		}
+	}
+	return symbols;
+}
+
+function getCurrentSubject(document : vscode.TextDocument, position : vscode.Position) : string | undefined {
+	// find the first word after last / on the current line before cursor
+	// if no such word, use the first word on this line
+	let line = document.lineAt(position.line).text.substring(0, position.character);
+	// check if we have a / character
+	let lastSlash = line.lastIndexOf('/');
+	if (lastSlash === -1) {
+		// split by spaces and parenthesis, i.e. 
+		// "Foo.bar (x, y)" => ["Foo.bar", "(", "x,", "y", ")"]
+		let components = line.split(/(\s+|[()])/).filter(s => s.trim() !== "");
+		let i = components.length - 1;
+		let parenthesisCount = 0;
+		while (i >= 0) {
+			// if we reached the end, return the current word
+			if (i === 0){
+				if (components[i].match(/[\w.]+/)) {
+					return components[i];
+				} else {
+					return undefined;
+				}
+			}
+			// if the current character is a word
+			if (components[i].match(/[\w.]+/)) {
+				// and previous character is not a word, nor a closing parenthesis
+				// or if the previous component is a dot
+				// and parenthesis count is 0
+				// return the current word
+				if ((!components[i-1].match(/[\w.)]+/) || components[i-1] === ".")
+					 && parenthesisCount === 0) {
+					return components[i];
+				} 
+			}
+			// increase the parenthesis count if we see a )
+			if (components[i] === ")") {
+				parenthesisCount++;
+			}
+			// decrease the parenthesis count if we see a (
+			if (components[i] === "(") {
+				parenthesisCount--;
+			}
+			i--;
+		}
+		return undefined;
+	} else {
+		// find the first word after the last slash, word should include . and _
+		let lastWordMatch = line.substring(lastSlash + 1).match(/[\w.]+/);
+		if (!lastWordMatch) {
+			return undefined;
+		}
+		let lastWord = lastWordMatch[0];
+		if(!lastWord) {
+			return undefined;
+		}
+		return lastWord;
+	}
+}
+
 function startLSP() {
 	// Signature help
 	vscode.languages.registerSignatureHelpProvider('istari', {
 		provideSignatureHelp(document, position, token, context) {
-			// find the first word after last / on the current line before cursor
-			// if no such word
-			let line = document.lineAt(position.line).text.substring(0, position.character);
-			// check if we have a / character
-			let lastSlash = line.lastIndexOf('/');
-			if (lastSlash === -1) {
+			let lastWord = getCurrentSubject(document, position);
+			if (lastWord) {
+				let word : string = lastWord;
+				let istari = getIstariForDocument(document);
+				return new Promise((resolve, reject) => {
+					istari.getTypeForConstant(word,
+						(data) => {
+							let signatureHelp = new vscode.SignatureHelp();
+							let signature = new vscode.SignatureInformation(
+								word,
+								new vscode.MarkdownString().appendCodeblock(data, "istari")
+							);
+							signatureHelp.signatures = [signature];
+							signatureHelp.activeSignature = 0;
+							signatureHelp.activeParameter = 0;
+							resolve(signatureHelp);
+							return true;
+						}
+					);
+				});
+			} else {
 				return undefined;
 			}
-			// find the first word after the last slash, word should include . and _
-			let lastWordMatch = line.substring(lastSlash + 1).match(/[\w.]+/);
-			if (!lastWordMatch) {
-				return undefined;
-			}
-			let lastWord = lastWordMatch[0];
-			if(!lastWord) {
-				return undefined;
-			}
-
-			let istari = getIstariForDocument(document);
-			return new Promise((resolve, reject) => {
-				istari.interjectWithCallback("Report.showType (parseLongident /" + lastWord + "/);",
-					(data) => {
-						let signatureHelp = new vscode.SignatureHelp();
-						let signature = new vscode.SignatureInformation(
-							lastWord,
-							new vscode.MarkdownString().appendCodeblock(data, "istari")
-						);
-						signatureHelp.signatures = [signature];
-						signatureHelp.activeSignature = 0;
-						signatureHelp.activeParameter = 0;
-						resolve(signatureHelp);
-						return true;
-					}
-				);
-			});
 		}
 	}, ' ');
 	// Completion
 	vscode.languages.registerCompletionItemProvider('istari', {
 		provideCompletionItems(document, position, token, context) {
+			// do not privde completions if this line has / or // only
+			let line = document.lineAt(position.line).text;
+			if (line.trim() === "//" || line.trim() === "/") {
+				return undefined;
+			}
+			// if line contains an even number of / we may just finished something.
+			if (line.split("/").length % 2 !== 0) {
+				return undefined;
+			}
 			let istari = getIstariForDocument(document);
 			return new Promise((resolve, reject) => {
 				istari.interjectWithCallback("Report.showAll ();", 
@@ -606,9 +793,9 @@ function startLSP() {
 			let istari = getIstari();
 			let itemName = item.label;
 			return new Promise((resolve, reject) => {
-				istari?.interjectWithCallback("Report.showType (parseLongident /" + itemName + "/);",
-					(data) => {
-						item.documentation = new vscode.MarkdownString().appendCodeblock(data, "istari");
+				istari?.getTypeAndDefinitionForConstant(itemName + "",
+					(type, definition) => {
+						item.documentation = new vscode.MarkdownString().appendCodeblock(type + "\n" + definition, "istari");
 						resolve(item);
 						return true;
 					}
@@ -622,23 +809,93 @@ function startLSP() {
 			let istari = getIstariForDocument(document);
 
 			// get the word at the position
-			let word = document.getText(document.getWordRangeAtPosition(position));
+			let word = document.getText(document.getWordRangeAtPosition(position, /[\w.]+/));
 			if (!word) {
 				return undefined;
 			}
 			return new Promise((resolve, reject) => {
-				istari.interjectWithCallback("Report.showType (parseLongident /" + word + "/);", 
-					(data) => {
+				istari.getTypeAndDefinitionForConstant(word, 
+					(type, definition) => {
 						resolve({
-							contents: [new vscode.MarkdownString().appendCodeblock(data, "istari")]
-							// data.split("\n").map((line) => {
-							// 	return { language: "istari", value: line };
-							// })
+							contents: [new vscode.MarkdownString().appendCodeblock(
+								type + "\n" + definition, "istari")]
 						});
-						return true; 
+						return true;
 					}
 				);
 			});
+		}
+	});
+	// Document Outline
+	vscode.languages.registerDocumentSymbolProvider('istari', {
+		async provideDocumentSymbols(document, token) {
+			// find all lines that begins with define / or lemma ", 
+			// and gete first word after / or " as the symbol name
+			let istari = getIstariForDocument(document);
+			let shouldShowTypeDetails = vscode.workspace.getConfiguration().get<boolean>('istari.showTypesInDocumentOutline')!;
+			let docSymbols : DocSymbol[] = getDocumentSymbols(document);
+			let retSymbols : vscode.DocumentSymbol[] = [];
+			
+
+			for (let symbol of docSymbols) {
+				let {word, kind, line, column} = symbol;
+				let symbolKind : vscode.SymbolKind = vscode.SymbolKind.Variable;
+				if (kind === "define") {
+					symbolKind = vscode.SymbolKind.Function;
+				} else if (kind === "lemma") {
+					symbolKind = vscode.SymbolKind.Method;
+				} else if (kind === "typedef") {
+					symbolKind = vscode.SymbolKind.Enum;
+				} else if (kind === "defineInd") {
+					symbolKind = vscode.SymbolKind.Function;
+				}
+
+				let symbolDesc : string = shouldShowTypeDetails? await new Promise(
+					(resolve, reject) => {
+						istari.getTypeForConstant(word, (type) => {
+							type = type.replace(/\s+/g, " ");
+							type = type.trim();
+							if (type.startsWith(word)) {
+								type = type.substring(word.length);
+							}
+							type = type.trim();
+							resolve(type);
+						});
+					}
+				) : "";
+
+
+			
+				let retSymbol = new vscode.DocumentSymbol(
+					//split by / or space 
+					word,
+					symbolDesc,
+					symbolKind,
+					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length)),
+					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length))
+				);
+				retSymbols.push(retSymbol);
+			}
+
+			return retSymbols;
+		}
+	});
+	// goto definition
+	vscode.languages.registerDefinitionProvider('istari', {
+		provideDefinition(document, position, token) {
+			let istari = getIstariForDocument(document);
+			// get the word at the position
+			let word = document.getText(document.getWordRangeAtPosition(position));
+			if (!word) {
+				return undefined;
+			}
+			let allSymbols = getDocumentSymbols(document);
+			let symbol = allSymbols.find((symbol) => symbol.word === word);
+			if (symbol) {
+				return new vscode.Location(document.uri, new vscode.Position(symbol.line, symbol.column));
+			} else {
+				return undefined;
+			}
 		}
 	});
 }
@@ -683,7 +940,9 @@ export function activate(context: vscode.ExtensionContext) {
 	
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.jumpToCursor', () => {
-		getIstari()?.jumpToCursor();
+		let istari = getIstari();
+		istari?.editor.document.save();
+		istari?.jumpToCursor();
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.prevLine', () => {
