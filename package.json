@@ -80,11 +80,6 @@
         "icon": "$(comment-discussion)"
       },
       {
-        "command": "istari.init",
-        "title": "Istari: Init",
-        "icon": "$(refresh)"
-      },
-      {
         "command": "istari.jumpCursor",
         "title": "Istari: Jump Cursor to Verifed"
       },
@@ -248,11 +243,6 @@
         {
           "when": "resourceLangId == istari",
           "command": "istari.search",
-          "group": "navigation"
-        },
-        {
-          "when": "resourceLangId == istari",
-          "command": "istari.init",
           "group": "navigation"
         }
       ]
