@@ -10,14 +10,21 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://github.com/pi314mm/istari-vscode"
+  },
   "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:istari"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "istari",
         "extensions": [
           ".ist"
-        ]
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -28,7 +35,7 @@
       }
     ],
     "configuration": {
-      "title": "Locations",
+      "title": "Istari Image Location",
       "properties": {
         "istari.smlLocation": {
           "type": "string",
@@ -39,6 +46,11 @@
           "type": "string",
           "default": "",
           "description": "File location of starisrv-heapimg"
+        },
+        "istari.showTypesInDocumentOutline": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether type information is shown in the outline, this is costly. Turn off if istari is slow."
         }
       }
     },
@@ -66,11 +78,6 @@
         "command": "istari.search",
         "title": "Istari: Find All Constants that Mention Targets",
         "icon": "$(comment-discussion)"
-      },
-      {
-        "command": "istari.init",
-        "title": "Istari: Init",
-        "icon": "$(refresh)"
       },
       {
         "command": "istari.jumpCursor",
@@ -236,11 +243,6 @@
         {
           "when": "resourceLangId == istari",
           "command": "istari.search",
-          "group": "navigation"
-        },
-        {
-          "when": "resourceLangId == istari",
-          "command": "istari.init",
           "group": "navigation"
         }
       ]
