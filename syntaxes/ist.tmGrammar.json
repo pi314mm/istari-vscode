@@ -7,7 +7,15 @@
       },
       {
         "name": "keyword.control.istari",
-        "match": "(?<!\\w)(fn|forall|lemma)(?!\\w)"
+        "match": "(?<!\\w)(fn|forall|iforall|iexists|intersect|union|foralltp|rec|mu|wtype|iset|let|seq|seqt|case|of|fnind|if|then|else)(?!\\w)"
+      },
+      {
+        "name": "keyword.other.istari",
+        "match": "(?<!\\w)(lemma|define|defineInd|definerec|openModule|beginModule|endModule|qed|File\\.import|reductions|val)(?!\\w)"
+      },
+      {
+        "name": "constant.language.istari",
+        "match": "(?<!\\w)(next|future|unit|void)(?!\\w)"
       },
       {
         "name": "constant.numeric.istari",
