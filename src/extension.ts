@@ -36,21 +36,25 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 const decorationGreenGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'green-bar.svg')),
 	gutterIconSize: 'contain',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
 
 const decorationYellowGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'yellow-bar.svg')),
 	gutterIconSize: 'contain',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
 
 const decorationRedGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'red-bar.svg')),
 	gutterIconSize: 'contain',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
 
 const decorationBlueGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'blue-bar.svg')),
 	gutterIconSize: 'contain',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
 
 function bufferToCaretString(buffer:Buffer) {
@@ -462,6 +466,10 @@ class IstariUI {
 			}
 			case "partialReady": {
 				this.editor.setDecorations(decorationRedGutter, []);
+				// force adding range on partial ready status
+				if (range2.length === 0) {
+					range2 = [new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(this.currentLine, 0))];
+				}
 				this.editor.setDecorations(decorationBlueGutter, range2);
 				this.editor.setDecorations(decorationYellowGutter, []);
 				break;
@@ -504,6 +512,7 @@ class IstariUI {
 			case IstariCommand.partialReady: {
 				this.webview.changeStatus("Partial Ready " + data);
 				this.status = "partialReady";
+				this.updateDecorations();
 				break;
 			}
 			case IstariCommand.ready: {
