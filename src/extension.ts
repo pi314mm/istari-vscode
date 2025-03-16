@@ -401,7 +401,7 @@ class IstariUI {
 		this.editor = editor;
 		this.webview = new IstariWebview(document);
 		this.currentLine = 1;
-		this.requestedLine = 0;
+		this.requestedLine = 1;
 		this.status = "ready";
 		this.terminal = new IstariTerminal(document, 
 			this.defaultCallback.bind(this), 
@@ -823,13 +823,18 @@ function startLSP() {
 				return undefined;
 			}
 			let istari = getIstariForDocument(document);
+			let allWords = [...new Set(document.getText().match(/[A-Za-z0-9._]+/g))];
 			return new Promise((resolve, reject) => {
 				istari.interjectWithCallback("Report.showAll ();", 
 					(data) => {
-						let completions = data.split("\n").filter((line) => !line.includes(" ")).map((line) => {
+						let istariWords = data.split("\n").filter((line) => !line.includes(" "));
+						let completions = istariWords.map((line) => {
 							return new vscode.CompletionItem(line, vscode.CompletionItemKind.Variable);
 						});
-						resolve(completions);
+						let wordCompletions = allWords?.filter((word) => !istariWords.includes(word)).map((word) => {
+							return new vscode.CompletionItem(word, vscode.CompletionItemKind.Constant);
+						}) ?? [];
+						resolve(completions.concat(wordCompletions));
 						return true;
 					}
 				);

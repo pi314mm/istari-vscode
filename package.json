@@ -159,7 +159,7 @@
       },
       {
         "command": "istari.jumpToPreviouslyRequested",
-        "key": "ctrl+;",
+        "key": "ctrl+'",
         "when": "resourceLangId == istari"
       },
       {
