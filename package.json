@@ -76,6 +76,11 @@
         "icon": "$(arrow-right)"
       },
       {
+        "command": "istari.restartTerminal",
+        "title": "Istari: Restart Istari REPL",
+        "icon": "$(arrow-right)"
+      },
+      {
         "command": "istari.getType",
         "title": "Istari: Get Type of a Constant"
       },

@@ -161,6 +161,10 @@ class IstariWebview {
 		this.webview.webview.postMessage(message);
 	}
 
+	resetText() {
+		this.messages = [];
+		this.postMessage({ command: 'resetText' });
+	}
 
 
 	appendText(text: string) {
@@ -406,6 +410,18 @@ class IstariUI {
 		this.terminal = new IstariTerminal(document, 
 			this.defaultCallback.bind(this), 
 			this.tasksUpdated.bind(this));
+	}
+
+	restartIstariTerminal() {
+		this.terminal.proc.kill();
+		this.terminal = new IstariTerminal(this.document, 
+			this.defaultCallback.bind(this), 
+			this.tasksUpdated.bind(this));
+		this.webview.resetText();
+		this.currentLine = 1;
+		this.requestedLine = 1;
+		this.status = "ready";
+		this.updateDecorations();
 	}
 
 	tasksUpdated() {
@@ -1000,6 +1016,11 @@ export function activate(context: vscode.ExtensionContext) {
 		let istari = getIstari();
 		istari?.editor.document.save();
 		istari?.jumpToRequestedLine();
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.restartTerminal', () => {
+		let istari = getIstari();
+		istari?.restartIstariTerminal();
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.prevLine', () => {
