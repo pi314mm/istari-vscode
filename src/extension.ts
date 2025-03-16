@@ -9,55 +9,48 @@ import { assert, time } from 'console';
 // 	backgroundColor: "green",
 // 	isWholeLine: true,
 // });
-    // Inline SVG as a string
-    const blueDotSvg = `
-       <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-  <!-- Blue background circle with rounded corners -->
-  <rect x="0" y="0" width="20" height="20" rx="5" ry="5" fill="#007acc"/>
-  <!-- White text in the center -->
-    <text x="10" y="14" font-size="14" text-anchor="middle" fill="white">&gt;</text>
+// Inline SVG as a string
+const blueDotSvg = `
+	<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<!-- Blue background circle with rounded corners -->
+<rect x="0" y="0" width="20" height="20" rx="5" ry="5" fill="#007acc"/>
+<!-- White text in the center -->
+<text x="10" y="14" font-size="14" text-anchor="middle" fill="white">&gt;</text>
 </svg>
 
-    `;
+`;
 
     // Convert the SVG string to a base64 data URL
-    const blueDotSvgBase64 = `data:image/svg+xml;base64,${Buffer.from(blueDotSvg).toString('base64')}`;
+const blueDotSvgBase64 = `data:image/svg+xml;base64,${Buffer.from(blueDotSvg).toString('base64')}`;
 const decorationType2 = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.parse(blueDotSvgBase64),
 	gutterIconSize: '80%',
-	// all red
-	// overviewRulerLane: vscode.OverviewRulerLane.Right,
-	// overviewRulerColor: 'rgba(255,0,0,0.5)',
-	// // isWholeLine: true,
-	// backgroundColor: 'rgba(255,0,0,0.5)',
-	// borderWidth: '1px',
-	// borderStyle: 'solid',
 });
 
 const decorationType = vscode.window.createTextEditorDecorationType({
-	// gutterIconPath: blueDotSvgBase64,
-	// gutterIconSize: '20px',
-	// gutterIconSize: ', // Ensure the icon fits properly
-
 	isWholeLine: true,
 	backgroundColor: 'rgba(0, 122, 204, 0.1)', // VS Code blue
 	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+});
 
-	// before : {
-		
-	// 	contentText: '>', // Invisible character to apply styles
-	// 	margin: '0 2px 0 0', // Space before the line number
-	// 	// width: '100px', 
-	// 	height: '100%',
-	// 	backgroundColor: 'rgba(0, 122, 204, 1)', // VS Code blue
-	// 	color: 'white',
-	// 	fontWeight: 'bold',
-		
-	// 	// borderRadius: '4px' // Rounded square
-	// },
-	// rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
-	// backgroundColor: 'rgba(0, 122, 204, 1)',
-	// overviewRulerLane: vscode.OverviewRulerLane.Right,
+const decorationGreenGutter = vscode.window.createTextEditorDecorationType({
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'green-bar.svg')),
+	gutterIconSize: 'contain',
+});
+
+const decorationYellowGutter = vscode.window.createTextEditorDecorationType({
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'yellow-bar.svg')),
+	gutterIconSize: 'contain',
+});
+
+const decorationRedGutter = vscode.window.createTextEditorDecorationType({
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'red-bar.svg')),
+	gutterIconSize: 'contain',
+});
+
+const decorationBlueGutter = vscode.window.createTextEditorDecorationType({
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'blue-bar.svg')),
+	gutterIconSize: 'contain',
 });
 
 function bufferToCaretString(buffer:Buffer) {
@@ -391,6 +384,8 @@ class IstariUI {
 	document: vscode.TextDocument;
 	terminal: IstariTerminal;
 	currentLine: number;
+	requestedLine: number;
+	status : "ready" | "working" | "partialReady";
 	webview : IstariWebview;
 	
 	editor : vscode.TextEditor;
@@ -406,6 +401,8 @@ class IstariUI {
 		this.editor = editor;
 		this.webview = new IstariWebview(document);
 		this.currentLine = 1;
+		this.requestedLine = 0;
+		this.status = "ready";
 		this.terminal = new IstariTerminal(document, 
 			this.defaultCallback.bind(this), 
 			this.tasksUpdated.bind(this));
@@ -419,13 +416,52 @@ class IstariUI {
 		}
 	}
 
-	updateCurrentLine(line: number) {
-		this.currentLine = line;
+	updateDecorations() {
+		// blue dot on current line
 		let range = this.currentLine > 1 ? [
 			new vscode.Range(new vscode.Position(this.currentLine - 1, 0), new vscode.Position(this.currentLine - 1, 0))
 		] : [];
 		this.editor.setDecorations(decorationType, range);
 		this.editor.setDecorations(decorationType2, range);
+		// all previous line green
+		let greenRange = this.currentLine > 1 ? [
+			new vscode.Range(new vscode.Position(0, 0), new vscode.Position(this.currentLine - 1, 0))
+		] : [];
+		this.editor.setDecorations(decorationGreenGutter, greenRange);
+		// current line - requested line, based on status
+		// ready -> red (this indicates a failure if this range is non empty)
+		// partial ready -> blue
+		// working -> yellow
+		let requestedLine = this.requestedLine > 0 ? this.requestedLine : this.currentLine;
+		// let rangeColor = this.status === "ready" ? decorationRedGutter : this.status === "partialReady" ? decorationBlueGutter : decorationYellowGutter;
+		let range2 = requestedLine > this.currentLine ? [
+			new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(requestedLine - 1, 0))
+		] : [];
+		switch (this.status) {
+			case "ready": {
+				this.editor.setDecorations(decorationRedGutter, range2);
+				this.editor.setDecorations(decorationBlueGutter, []);
+				this.editor.setDecorations(decorationYellowGutter, []);
+				break;
+			}
+			case "partialReady": {
+				this.editor.setDecorations(decorationRedGutter, []);
+				this.editor.setDecorations(decorationBlueGutter, range2);
+				this.editor.setDecorations(decorationYellowGutter, []);
+				break;
+			}
+			case "working": {
+				this.editor.setDecorations(decorationRedGutter, []);
+				this.editor.setDecorations(decorationBlueGutter, []);
+				this.editor.setDecorations(decorationYellowGutter, range2);
+				break;
+			}
+		}
+	}
+
+	updateCurrentLine(line: number) {
+		this.currentLine = line;
+		this.updateDecorations();
 		this.webview.changeCursor(this.currentLine.toString());
 	}
 
@@ -446,14 +482,18 @@ class IstariUI {
 			}
 			case IstariCommand.working: {
 				this.webview.changeStatus("Working " + data);
+				this.status = "working";
 				break;
 			}
 			case IstariCommand.partialReady: {
 				this.webview.changeStatus("Partial Ready " + data);
+				this.status = "partialReady";
 				break;
 			}
 			case IstariCommand.ready: {
 				this.webview.changeStatus("Ready " + data);
+				this.status = "ready";
+				this.updateDecorations();
 				break;
 			}
 
@@ -514,6 +554,7 @@ class IstariUI {
 
 	jumpToCursor() {
 		let cursorLine = this.editor.selection.active.line;
+		this.requestedLine = cursorLine + 1;
 		if (cursorLine > this.currentLine - 1) {
 			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine - 1, 0), new vscode.Position(cursorLine, 0));
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
@@ -984,14 +1025,14 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	istari = editor ? new IstariTerminal(editor) : undefined;
 	// }));
 
-	// context.subscriptions.push(vscode.commands.registerCommand('istari.jumpCursor', () => {
-	// 	let istari = getIstari();
-	// 	if (istari) {
-	// 		let pos = new vscode.Position(istari.currentLine - 1, 0);
-	// 		istari.get_editor().selection = new vscode.Selection(pos, pos);
-	// 		istari.get_editor().revealRange(new vscode.Range(pos, pos));
-	// 	}
-	// }));
+	context.subscriptions.push(vscode.commands.registerCommand('istari.jumpCursor', () => {
+		let istari = getIstari();
+		if (istari) {
+			let pos = new vscode.Position(istari.currentLine - 1, 0);
+			istari.editor.selection = new vscode.Selection(pos, pos);
+			istari.editor.revealRange(new vscode.Range(pos, pos));
+		}
+	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.interject', () => {
 		vscode.window.showInputBox({ title: "Interject with IML code", prompt: "IML code", ignoreFocusOut: true }).then((code) => {
