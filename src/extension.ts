@@ -395,6 +395,7 @@ class IstariUI {
 	requestedLine: number;
 	status : "ready" | "working" | "partialReady";
 	webview : IstariWebview;
+	diagnostics : vscode.DiagnosticCollection;
 	
 	editor : vscode.TextEditor;
 
@@ -414,6 +415,7 @@ class IstariUI {
 		this.terminal = new IstariTerminal(document, 
 			this.defaultCallback.bind(this), 
 			this.tasksUpdated.bind(this));
+		this.diagnostics = vscode.languages.createDiagnosticCollection("istari");
 	}
 
 	restartIstariTerminal() {
@@ -426,6 +428,7 @@ class IstariUI {
 		this.requestedLine = 1;
 		this.status = "ready";
 		this.updateDecorations();
+		this.diagnostics.clear();
 	}
 
 	tasksUpdated() {
@@ -492,6 +495,23 @@ class IstariUI {
 	setEditor(editor: vscode.TextEditor) {
 		this.editor = editor;
 		this.updateCurrentLine(this.currentLine);
+	}
+
+	// called on send lines, also gets diagnostic information 
+	respondToSendLineResponse(text: string) {
+		// format: ... error ...  <line>.<col>.
+		let diagnostic = text.match(/error.*?(\d+)\.(\d+)\.\s$/);
+		if (diagnostic) {
+			let line = parseInt(diagnostic[1]);
+			let col = parseInt(diagnostic[2]);
+			// get the range for single word (seems istari uses 1 based line number and 0 based col number)
+			let wordRange = this.editor.document.getWordRangeAtPosition(new vscode.Position(line - 1, col))
+			|| new vscode.Range(new vscode.Position(line - 1, col), new vscode.Position(line - 1, col + 10));
+			let diagnosticInfo = new vscode.Diagnostic(wordRange, text, vscode.DiagnosticSeverity.Error);
+			this.diagnostics.set(this.document.uri, [diagnosticInfo]);
+		} else {
+			this.diagnostics.clear();
+		}
 	}
 
 	defaultCallback(cmd: IstariCommand, data: string) {
@@ -566,6 +586,7 @@ class IstariUI {
 	sendLines(text: string) {
 		this.terminal.enqueueTask(new IstariTask(IstariInputCommand.textInput, text, (data) => {
 			this.webview.appendText(data);
+			this.respondToSendLineResponse(data);
 			return true;
 		}));
 	}
