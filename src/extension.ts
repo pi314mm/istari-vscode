@@ -940,7 +940,7 @@ function startLSP() {
 				if (kind === "define") {
 					symbolKind = vscode.SymbolKind.Function;
 				} else if (kind === "lemma") {
-					symbolKind = vscode.SymbolKind.Method;
+					symbolKind = vscode.SymbolKind.Property;
 				} else if (kind === "typedef") {
 					symbolKind = vscode.SymbolKind.Enum;
 				} else if (kind === "defineInd") {
