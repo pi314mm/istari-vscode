@@ -552,15 +552,19 @@ class IstariUI {
 		}));
 	}
 
+	jumpToRequestedLine() {
+		if (this.requestedLine > this.currentLine) {
+			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine - 1, 0), new vscode.Position(this.requestedLine - 1, 0));
+			this.sendLines(this.editor.document.getText(wordAtCurorRange));
+		} else if (this.requestedLine < this.currentLine) {
+			this.rewindToLine(this.requestedLine);
+		}
+	}
+
 	jumpToCursor() {
 		let cursorLine = this.editor.selection.active.line;
 		this.requestedLine = cursorLine + 1;
-		if (cursorLine > this.currentLine - 1) {
-			let wordAtCurorRange = new vscode.Range(new vscode.Position(this.currentLine - 1, 0), new vscode.Position(cursorLine, 0));
-			this.sendLines(this.editor.document.getText(wordAtCurorRange));
-		} else if (cursorLine < this.currentLine - 1) {
-			this.rewindToLine(cursorLine + 1);
-		}
+		this.jumpToRequestedLine();
 	}
 
 	nextLine() {
@@ -985,6 +989,12 @@ export function activate(context: vscode.ExtensionContext) {
 		let istari = getIstari();
 		istari?.editor.document.save();
 		istari?.jumpToCursor();
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.jumpToPreviouslyRequested', () => {
+		let istari = getIstari();
+		istari?.editor.document.save();
+		istari?.jumpToRequestedLine();
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('istari.prevLine', () => {
