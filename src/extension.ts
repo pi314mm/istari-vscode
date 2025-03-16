@@ -152,6 +152,7 @@ class IstariWebview {
 				this.messages.forEach((message) => {
 					this.webview.webview.postMessage(message);
 				});
+				this.webview.webview.postMessage({ command: 'scrollToBottom' });
 
 			}
 		});
@@ -772,8 +773,8 @@ function startLSP() {
 			if (line.trim() === "//" || line.trim() === "/") {
 				return undefined;
 			}
-			// if line contains an even number of / we may just finished something.
-			if (line.split("/").length % 2 !== 0) {
+			// if line contains an non-zero even number of / we may just finished something.
+			if (line.split("/").length > 2 && line.split("/").length % 2 !== 0) {
 				return undefined;
 			}
 			let istari = getIstariForDocument(document);
