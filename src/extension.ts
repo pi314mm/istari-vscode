@@ -22,12 +22,12 @@ const blueDotSvg = `
 
     // Convert the SVG string to a base64 data URL
 const blueDotSvgBase64 = `data:image/svg+xml;base64,${Buffer.from(blueDotSvg).toString('base64')}`;
-const decorationType2 = vscode.window.createTextEditorDecorationType({
+const decorationBlueArrowGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.parse(blueDotSvgBase64),
 	gutterIconSize: '80%',
 });
 
-const decorationType = vscode.window.createTextEditorDecorationType({
+const decorationBlueBackground = vscode.window.createTextEditorDecorationType({
 	isWholeLine: true,
 	backgroundColor: 'rgba(0, 122, 204, 0.1)', // VS Code blue
 	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
@@ -36,6 +36,12 @@ const decorationType = vscode.window.createTextEditorDecorationType({
 const decorationGreenGutter = vscode.window.createTextEditorDecorationType({
 	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'green-bar.svg')),
 	gutterIconSize: 'contain',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+});
+
+const decorationGreenBackground = vscode.window.createTextEditorDecorationType({
+	isWholeLine: true,
+	backgroundColor: 'rgba(0, 215, 86, 0.1)', // green
 	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
 
@@ -444,44 +450,58 @@ class IstariUI {
 		let range = this.currentLine > 1 ? [
 			new vscode.Range(new vscode.Position(this.currentLine - 1, 0), new vscode.Position(this.currentLine - 1, 0))
 		] : [];
-		this.editor.setDecorations(decorationType, range);
-		this.editor.setDecorations(decorationType2, range);
+		let colorCurrentLine = vscode.workspace.getConfiguration().get<boolean>('istari.colorCurrentLine');
+		if (colorCurrentLine && colorCurrentLine.valueOf()){
+			this.editor.setDecorations(decorationBlueBackground, range);
+		}
+		let colorGutter = vscode.workspace.getConfiguration().get<boolean>('istari.colorGutter');
+		if (colorGutter && colorGutter.valueOf()){
+			this.editor.setDecorations(decorationBlueArrowGutter, range);
+		}
 		// all previous line green
 		let greenRange = this.currentLine > 1 ? [
-			new vscode.Range(new vscode.Position(0, 0), new vscode.Position(this.currentLine - 1, 0))
+			new vscode.Range(new vscode.Position(0, 0), new vscode.Position(this.currentLine - 2, 0))
 		] : [];
-		this.editor.setDecorations(decorationGreenGutter, greenRange);
-		// current line - requested line, based on status
-		// ready -> red (this indicates a failure if this range is non empty)
-		// partial ready -> blue
-		// working -> yellow
-		let requestedLine = this.requestedLine > 0 ? this.requestedLine : this.currentLine;
-		// let rangeColor = this.status === "ready" ? decorationRedGutter : this.status === "partialReady" ? decorationBlueGutter : decorationYellowGutter;
-		let range2 = requestedLine > this.currentLine ? [
-			new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(requestedLine - 1, 0))
-		] : [];
-		switch (this.status) {
-			case "ready": {
-				this.editor.setDecorations(decorationRedGutter, range2);
-				this.editor.setDecorations(decorationBlueGutter, []);
-				this.editor.setDecorations(decorationYellowGutter, []);
-				break;
-			}
-			case "partialReady": {
-				this.editor.setDecorations(decorationRedGutter, []);
-				// force adding range on partial ready status
-				if (range2.length === 0) {
-					range2 = [new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(this.currentLine, 0))];
+		if (colorGutter && colorGutter.valueOf()){
+			this.editor.setDecorations(decorationGreenGutter, greenRange);
+		}
+		let colorCompleted = vscode.workspace.getConfiguration().get<boolean>('istari.colorCompleted');
+		if (colorCompleted && colorCompleted.valueOf()){
+			this.editor.setDecorations(decorationGreenBackground, greenRange);
+		}
+		if (colorGutter && colorGutter.valueOf()){
+			// current line - requested line, based on status
+			// ready -> red (this indicates a failure if this range is non empty)
+			// partial ready -> blue
+			// working -> yellow
+			let requestedLine = this.requestedLine > 0 ? this.requestedLine : this.currentLine;
+			// let rangeColor = this.status === "ready" ? decorationRedGutter : this.status === "partialReady" ? decorationBlueGutter : decorationYellowGutter;
+			let range2 = requestedLine > this.currentLine ? [
+				new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(requestedLine - 2, 0))
+			] : [];
+			switch (this.status) {
+				case "ready": {
+					this.editor.setDecorations(decorationRedGutter, range2);
+					this.editor.setDecorations(decorationBlueGutter, []);
+					this.editor.setDecorations(decorationYellowGutter, []);
+					break;
 				}
-				this.editor.setDecorations(decorationBlueGutter, range2);
-				this.editor.setDecorations(decorationYellowGutter, []);
-				break;
-			}
-			case "working": {
-				this.editor.setDecorations(decorationRedGutter, []);
-				this.editor.setDecorations(decorationBlueGutter, []);
-				this.editor.setDecorations(decorationYellowGutter, range2);
-				break;
+				case "partialReady": {
+					this.editor.setDecorations(decorationRedGutter, []);
+					// force adding range on partial ready status
+					if (range2.length === 0) {
+						range2 = [new vscode.Range(new vscode.Position(this.currentLine, 0), new vscode.Position(this.currentLine, 0))];
+					}
+					this.editor.setDecorations(decorationBlueGutter, range2);
+					this.editor.setDecorations(decorationYellowGutter, []);
+					break;
+				}
+				case "working": {
+					this.editor.setDecorations(decorationRedGutter, []);
+					this.editor.setDecorations(decorationBlueGutter, []);
+					this.editor.setDecorations(decorationYellowGutter, range2);
+					break;
+				}
 			}
 		}
 	}

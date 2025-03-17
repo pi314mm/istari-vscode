@@ -51,6 +51,21 @@
           "type": "boolean",
           "default": true,
           "description": "Whether type information is shown in the outline, this is costly. Turn off if istari is slow."
+        },
+        "istari.colorCurrentLine": {
+          "type": "boolean",
+          "default": true,
+          "description": "Color the current line with a blue background"
+        },
+        "istari.colorCompleted": {
+          "type": "boolean",
+          "default": false,
+          "description": "Color the verified lines with a green background"
+        },
+        "istari.colorGutter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Color the side gutter bar with icons"
         }
       }
     },
@@ -72,13 +87,11 @@
       },
       {
         "command": "istari.jumpToPreviouslyRequested",
-        "title": "Istari: Jump To the Previously Requested Line",
-        "icon": "$(arrow-right)"
+        "title": "Istari: Jump To the Previously Requested Line"
       },
       {
         "command": "istari.restartTerminal",
-        "title": "Istari: Restart Istari REPL",
-        "icon": "$(arrow-right)"
+        "title": "Istari: Restart Istari REPL"
       },
       {
         "command": "istari.getType",
@@ -91,7 +104,8 @@
       },
       {
         "command": "istari.jumpCursor",
-        "title": "Istari: Jump Cursor to Verifed"
+        "title": "Istari: Jump Cursor to Verifed",
+        "icon": "$(pin)"
       },
       {
         "command": "istari.interject",
@@ -258,6 +272,11 @@
         {
           "when": "resourceLangId == istari",
           "command": "istari.search",
+          "group": "navigation"
+        },
+        {
+          "when": "resourceLangId == istari",
+          "command": "istari.jumpCursor",
           "group": "navigation"
         }
       ]
