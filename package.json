@@ -71,6 +71,16 @@
         "icon": "$(arrow-right)"
       },
       {
+        "command": "istari.jumpToPreviouslyRequested",
+        "title": "Istari: Jump To the Previously Requested Line",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "istari.restartTerminal",
+        "title": "Istari: Restart Istari REPL",
+        "icon": "$(arrow-right)"
+      },
+      {
         "command": "istari.getType",
         "title": "Istari: Get Type of a Constant"
       },
@@ -150,6 +160,11 @@
       {
         "command": "istari.jumpToCursor",
         "key": "ctrl+enter",
+        "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.jumpToPreviouslyRequested",
+        "key": "ctrl+'",
         "when": "resourceLangId == istari"
       },
       {
