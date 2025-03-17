@@ -4,8 +4,4 @@ Once the extension is loaded, open up vscode settings (ctrl + ,) and edit the "I
 
 `sml @SMLload=ISTARI_HEAP_PATH`
 
-Once you get those settings loaded, open a .ist file and click the refresh icon (Istari: init command) at the top right. The buffer should appear in the vscode Output (Ctrl+K Ctrl+H) in a newly created istari tab. You're now ready to use the extension!
-
 Most of the Emacs Istari commands are included in the extension. The keyboard shortcuts are set to use Ctrl+i instead of the Emacs Ctrl+c because we don't want to override Ctrl+c (copy).
-
-If things break, pressing the refresh button generally fixes things.
