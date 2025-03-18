@@ -790,6 +790,30 @@ function getDocumentSymbols(document: vscode.TextDocument) : DocSymbol[] {
 	return symbols;
 }
 
+function getModuleSymbols(document: vscode.TextDocument) : vscode.DocumentSymbol[] {
+	let result = [];
+	for (let i = 0; i < document.lineCount; i++) {
+		let line = document.lineAt(i).text;
+		let moduleNameMatch = line.match(/^beginModule\s+\"(.*)\"/);
+		if (moduleNameMatch){
+			let moduleName = moduleNameMatch[1];
+			// find until endModule
+			let start = i;
+			while (i < document.lineCount) {
+				let line = document.lineAt(i).text;
+				if (line.includes("endModule")) {
+					break;
+				}
+				i++;
+			}
+			let end = i;
+			result.push(new vscode.DocumentSymbol(moduleName, "", vscode.SymbolKind.Module,
+				new vscode.Range(start, 0, end, 0), new vscode.Range(start, 0, start, 0)));
+		}
+	}
+	return result;
+}
+
 function getCurrentSubject(document : vscode.TextDocument, position : vscode.Position) : string | undefined {
 	// find the first word after last / on the current line before cursor
 	// if no such word, use the first word on this line
@@ -951,7 +975,8 @@ function startLSP() {
 			let istari = getIstariForDocument(document);
 			let shouldShowTypeDetails = vscode.workspace.getConfiguration().get<boolean>('istari.showTypesInDocumentOutline')!;
 			let docSymbols : DocSymbol[] = getDocumentSymbols(document);
-			let retSymbols : vscode.DocumentSymbol[] = [];
+			let moduleSymbols = getModuleSymbols(document);
+			let retSymbols : vscode.DocumentSymbol[] = moduleSymbols;
 			
 
 			for (let symbol of docSymbols) {
@@ -991,7 +1016,20 @@ function startLSP() {
 					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length)),
 					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length))
 				);
-				retSymbols.push(retSymbol);
+
+				// check if retSymbol is in ModuleSymbols
+
+				let candidates = moduleSymbols.filter((moduleSymbol) => {
+					if (moduleSymbol.range.start.line < line && moduleSymbol.range.end.line > line) {
+						return true;
+					}
+				});
+
+				if (candidates.length > 0) {
+					candidates[0].children.push(retSymbol);
+				} else {
+					retSymbols.push(retSymbol);
+				}
 			}
 
 			return retSymbols;
