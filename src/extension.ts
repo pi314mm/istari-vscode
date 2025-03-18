@@ -230,6 +230,7 @@ class IstariTerminal {
 	defaultCallback : (cmd: IstariCommand, data: string) => void;
 	tasksUpdated : () => void;
 	istariInputStatus : boolean = false; // whether istari is ready to accept input
+	pendingOutput : Buffer;
 
 	constructor(
 		document : vscode.TextDocument,
@@ -248,6 +249,7 @@ class IstariTerminal {
 			this.processOutput(data);
 		});
 		this.tasksUpdated = onTasksUpdated;
+		this.pendingOutput = Buffer.from("");
 	}
 
 
@@ -328,11 +330,18 @@ class IstariTerminal {
 
 	processOutput(data: Buffer) {
 		this.debugLog("<<<< "+ bufferToCaretString(data));
+		this.pendingOutput = Buffer.concat([this.pendingOutput, data]);
+		this.processPendingOutput();
+	}
+
+	processPendingOutput() {
+		let data = this.pendingOutput;
 		let idx = 0;
 		while(idx < data.length) {
 			let curChar = data[idx];
 			if (curChar === 0x01) {
 				let command = "";
+				let startIdx = idx;
 				idx++; // Move past the 0x01 character
 				while (idx < data.length && data[idx] !== 0x02) {
 					command += String.fromCharCode(data[idx]);
@@ -342,7 +351,10 @@ class IstariTerminal {
 				if (idx < data.length) {
 					idx++; // Move past the 0x02 character
 				} else {
-					throw new Error("0x02 character not found in command, bug in the extension");
+					// throw new Error("0x02 character not found in command, bug in the extension");
+					// 0x02 not found, abort processing current output and wait for next one
+					this.pendingOutput = data.slice(startIdx);
+					return;
 				}
 				switch (command[0]) {
 					case 'f': {
@@ -386,7 +398,7 @@ class IstariTerminal {
 			}
 		}
 
-
+		this.pendingOutput = Buffer.from("");
 		// done processing the inputs
 		this.processTasks();
 	}
