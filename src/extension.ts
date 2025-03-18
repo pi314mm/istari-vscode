@@ -230,6 +230,7 @@ class IstariTerminal {
 	defaultCallback : (cmd: IstariCommand, data: string) => void;
 	tasksUpdated : () => void;
 	istariInputStatus : boolean = false; // whether istari is ready to accept input
+	pendingOutput : Buffer;
 
 	constructor(
 		document : vscode.TextDocument,
@@ -248,6 +249,7 @@ class IstariTerminal {
 			this.processOutput(data);
 		});
 		this.tasksUpdated = onTasksUpdated;
+		this.pendingOutput = Buffer.from("");
 	}
 
 
@@ -328,11 +330,18 @@ class IstariTerminal {
 
 	processOutput(data: Buffer) {
 		this.debugLog("<<<< "+ bufferToCaretString(data));
+		this.pendingOutput = Buffer.concat([this.pendingOutput, data]);
+		this.processPendingOutput();
+	}
+
+	processPendingOutput() {
+		let data = this.pendingOutput;
 		let idx = 0;
 		while(idx < data.length) {
 			let curChar = data[idx];
 			if (curChar === 0x01) {
 				let command = "";
+				let startIdx = idx;
 				idx++; // Move past the 0x01 character
 				while (idx < data.length && data[idx] !== 0x02) {
 					command += String.fromCharCode(data[idx]);
@@ -342,7 +351,10 @@ class IstariTerminal {
 				if (idx < data.length) {
 					idx++; // Move past the 0x02 character
 				} else {
-					throw new Error("0x02 character not found in command, bug in the extension");
+					// throw new Error("0x02 character not found in command, bug in the extension");
+					// 0x02 not found, abort processing current output and wait for next one
+					this.pendingOutput = data.slice(startIdx);
+					return;
 				}
 				switch (command[0]) {
 					case 'f': {
@@ -386,7 +398,7 @@ class IstariTerminal {
 			}
 		}
 
-
+		this.pendingOutput = Buffer.from("");
 		// done processing the inputs
 		this.processTasks();
 	}
@@ -790,6 +802,30 @@ function getDocumentSymbols(document: vscode.TextDocument) : DocSymbol[] {
 	return symbols;
 }
 
+function getModuleSymbols(document: vscode.TextDocument) : vscode.DocumentSymbol[] {
+	let result = [];
+	for (let i = 0; i < document.lineCount; i++) {
+		let line = document.lineAt(i).text;
+		let moduleNameMatch = line.match(/^beginModule\s+\"(.*)\"/);
+		if (moduleNameMatch){
+			let moduleName = moduleNameMatch[1];
+			// find until endModule
+			let start = i;
+			while (i < document.lineCount) {
+				let line = document.lineAt(i).text;
+				if (line.includes("endModule")) {
+					break;
+				}
+				i++;
+			}
+			let end = i;
+			result.push(new vscode.DocumentSymbol(moduleName, "", vscode.SymbolKind.Module,
+				new vscode.Range(start, 0, end, 0), new vscode.Range(start, 0, start, 0)));
+		}
+	}
+	return result;
+}
+
 function getCurrentSubject(document : vscode.TextDocument, position : vscode.Position) : string | undefined {
 	// find the first word after last / on the current line before cursor
 	// if no such word, use the first word on this line
@@ -951,7 +987,8 @@ function startLSP() {
 			let istari = getIstariForDocument(document);
 			let shouldShowTypeDetails = vscode.workspace.getConfiguration().get<boolean>('istari.showTypesInDocumentOutline')!;
 			let docSymbols : DocSymbol[] = getDocumentSymbols(document);
-			let retSymbols : vscode.DocumentSymbol[] = [];
+			let moduleSymbols = getModuleSymbols(document);
+			let retSymbols : vscode.DocumentSymbol[] = moduleSymbols;
 			
 
 			for (let symbol of docSymbols) {
@@ -991,7 +1028,20 @@ function startLSP() {
 					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length)),
 					new vscode.Range(new vscode.Position(line, column), new vscode.Position(line, document.lineAt(line).text.length))
 				);
-				retSymbols.push(retSymbol);
+
+				// check if retSymbol is in ModuleSymbols
+
+				let candidates = moduleSymbols.filter((moduleSymbol) => {
+					if (moduleSymbol.range.start.line < line && moduleSymbol.range.end.line > line) {
+						return true;
+					}
+				});
+
+				if (candidates.length > 0) {
+					candidates[0].children.push(retSymbol);
+				} else {
+					retSymbols.push(retSymbol);
+				}
 			}
 
 			return retSymbols;
