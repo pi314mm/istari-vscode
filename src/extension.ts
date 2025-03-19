@@ -915,8 +915,9 @@ function startLSP() {
 	// Completion
 	vscode.languages.registerCompletionItemProvider('istari', {
 		provideCompletionItems(document, position, token, context) {
+			// only consider the current line up to the current position
+			let line = document.lineAt(position.line).text.substring(0, position.character);
 			// do not privde completions if this line has / or // only
-			let line = document.lineAt(position.line).text;
 			if (line.trim() === "//" || line.trim() === "/") {
 				return undefined;
 			}
