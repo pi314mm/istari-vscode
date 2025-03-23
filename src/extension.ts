@@ -636,6 +636,23 @@ class IstariUI {
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
 		} else if (this.requestedLine < this.currentLine) {
 			this.rewindToLine(this.requestedLine);
+		} else if (this.requestedLine === this.currentLine) {
+			// special: if we already jumped to the requested line, just jump the next line past ;
+			// currentLine and requestedLine is 1 indexed, nextline is zero-indexed
+			let nextline = this.currentLine;
+			while (nextline < this.editor.document.lineCount) {
+				let line = this.editor.document.lineAt(nextline).text;
+				nextline++;
+				if (line.includes(";")) {
+					break;
+				}
+			}
+			if (nextline + 1 !== this.requestedLine 
+				// && nextline < this.editor.document.lineCount
+			) {
+				this.requestedLine = nextline + 1;
+				this.jumpToRequestedLine();
+			}
 		}
 	}
 
