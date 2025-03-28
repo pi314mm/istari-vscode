@@ -252,6 +252,15 @@ class IstariTerminal {
 		this.pendingOutput = Buffer.from("");
 	}
 
+	interrupt(){
+		if(this.proc.kill('SIGINT')){
+			// wait 0.01 seconds
+			setTimeout(() => {
+				this.writeStdIn("RecoverRepl.recover ();\n")
+			}, 10);
+		}
+	}
+
 
 	debugLog(text: string) {
 		const now = new Date();
@@ -636,6 +645,23 @@ class IstariUI {
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
 		} else if (this.requestedLine < this.currentLine) {
 			this.rewindToLine(this.requestedLine);
+		} else if (this.requestedLine === this.currentLine) {
+			// special: if we already jumped to the requested line, just jump the next line past ;
+			// currentLine and requestedLine is 1 indexed, nextline is zero-indexed
+			let nextline = this.currentLine;
+			while (nextline < this.editor.document.lineCount) {
+				let line = this.editor.document.lineAt(nextline).text;
+				nextline++;
+				if (line.includes(";")) {
+					break;
+				}
+			}
+			if (nextline + 1 !== this.requestedLine 
+				// && nextline < this.editor.document.lineCount
+			) {
+				this.requestedLine = nextline + 1;
+				this.jumpToRequestedLine();
+			}
 		}
 	}
 
@@ -915,8 +941,9 @@ function startLSP() {
 	// Completion
 	vscode.languages.registerCompletionItemProvider('istari', {
 		provideCompletionItems(document, position, token, context) {
+			// only consider the current line up to the current position
+			let line = document.lineAt(position.line).text.substring(0, position.character);
 			// do not privde completions if this line has / or // only
-			let line = document.lineAt(position.line).text;
 			if (line.trim() === "//" || line.trim() === "/") {
 				return undefined;
 			}
@@ -1153,6 +1180,13 @@ export function activate(context: vscode.ExtensionContext) {
 				getIstari()?.interject("Report.search (parseConstants /" + expr + "/) [];");
 			}
 		});
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.interrupt', () => {
+		let istari = getIstari();
+		if (istari) {
+			istari.terminal.interrupt();
+		}
 	}));
 
 
