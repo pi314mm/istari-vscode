@@ -252,6 +252,15 @@ class IstariTerminal {
 		this.pendingOutput = Buffer.from("");
 	}
 
+	interrupt(){
+		if(this.proc.kill('SIGINT')){
+			// wait 0.01 seconds
+			setTimeout(() => {
+				this.writeStdIn("RecoverRepl.recover ();\n")
+			}, 10);
+		}
+	}
+
 
 	debugLog(text: string) {
 		const now = new Date();
@@ -1171,6 +1180,13 @@ export function activate(context: vscode.ExtensionContext) {
 				getIstari()?.interject("Report.search (parseConstants /" + expr + "/) [];");
 			}
 		});
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('istari.interrupt', () => {
+		let istari = getIstari();
+		if (istari) {
+			istari.terminal.interrupt();
+		}
 	}));
 
 
