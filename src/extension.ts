@@ -645,7 +645,7 @@ class IstariUI {
 			this.sendLines(this.editor.document.getText(wordAtCurorRange));
 		} else if (this.requestedLine < this.currentLine) {
 			this.rewindToLine(this.requestedLine);
-		} else if (this.requestedLine === this.currentLine) {
+		} else if (this.requestedLine === this.currentLine && vscode.workspace.getConfiguration().get<boolean>('istari.continueJumpingForward')?.valueOf()) {
 			// special: if we already jumped to the requested line, just jump the next line past ;
 			// currentLine and requestedLine is 1 indexed, nextline is zero-indexed
 			let nextline = this.currentLine;
