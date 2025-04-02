@@ -108,6 +108,10 @@
         "icon": "$(pin)"
       },
       {
+        "command": "istari.interrupt",
+        "title": "Istari: Interrupt Current Execution"
+      },
+      {
         "command": "istari.interject",
         "title": "Istari: Interject with IML Code"
       },
