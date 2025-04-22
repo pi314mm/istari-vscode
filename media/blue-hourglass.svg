@@ -1,0 +1,7 @@
+<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue background circle with rounded corners -->
+  <rect x="0" y="0" width="20" height="20" rx="5" ry="5" fill="#007acc"/>
+  <!-- White hourglass in the center -->
+  <path d="M6 3h8M6 17h8M6 3c0 4 4 4 4 7s-4 3-4 7M14 3c0 4-4 4-4 7s4 3 4 7" 
+        fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
