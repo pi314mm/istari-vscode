@@ -87,11 +87,16 @@ let webviewHTML = `
 					case 'appendText': {
 						const mainText = document.getElementById('main_text');
 						if (mainText) {
-// console.log(message.text);
-mainText.innerHTML += "<hr><pre>" + message.text.replace(/\\n(\s*)/g, function(_, spaces) {
-// console.log('spaces', spaces, 'end');
-    return "<br>" + spaces.replace(/ /g, "&nbsp;");
-}) + "</pre>";						}
+							const new_hr = document.createElement("hr");
+							const new_pre = document.createElement("pre");
+							m = message.text; 
+							// Optionally "Clean up" the message
+							// m = m.replace(/\\n(\=+)/g, "");
+							// m = m.replace(/\\n(\-+)/g, "");
+							new_pre.textContent = m.trim();
+							main_text.appendChild(new_hr);
+							main_text.appendChild(new_pre);
+						}
 						break;
 					}
 					case 'resetText': {
