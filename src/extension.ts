@@ -21,11 +21,26 @@ const blueDotSvg = `
 `;
 
     // Convert the SVG string to a base64 data URL
-const blueDotSvgBase64 = `data:image/svg+xml;base64,${Buffer.from(blueDotSvg).toString('base64')}`;
+// const blueDotSvgBase64 = `data:image/svg+xml;base64,${Buffer.from(blueDotSvg).toString('base64')}`;
+// const decorationBlueArrowGutter = vscode.window.createTextEditorDecorationType({
+// 	gutterIconPath: vscode.Uri.parse(blueDotSvgBase64),
+// 	gutterIconSize: '80%',
+// });
+
 const decorationBlueArrowGutter = vscode.window.createTextEditorDecorationType({
-	gutterIconPath: vscode.Uri.parse(blueDotSvgBase64),
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'blue-dot.svg')),
+	// gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'green-bar.svg')),
 	gutterIconSize: '80%',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
 });
+
+const decorationBlueHourglassGutter = vscode.window.createTextEditorDecorationType({
+	gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'blue-hourglass.svg')),
+	// gutterIconPath: vscode.Uri.file(path.join(__dirname, '..', 'media', 'green-bar.svg')),
+	gutterIconSize: '80%',
+	rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed,
+});
+
 
 const decorationBlueBackground = vscode.window.createTextEditorDecorationType({
 	isWholeLine: true,
@@ -482,7 +497,13 @@ class IstariUI {
 		}
 		let colorGutter = vscode.workspace.getConfiguration().get<boolean>('istari.colorGutter');
 		if (colorGutter && colorGutter.valueOf()){
-			this.editor.setDecorations(decorationBlueArrowGutter, range);
+			if (this.status === "working") {
+				this.editor.setDecorations(decorationBlueHourglassGutter, range);
+				this.editor.setDecorations(decorationBlueArrowGutter, []);
+			} else {
+				this.editor.setDecorations(decorationBlueHourglassGutter, []);
+				this.editor.setDecorations(decorationBlueArrowGutter, range);
+			}
 		}
 		// all previous line green
 		let greenRange = this.currentLine > 1 ? [
