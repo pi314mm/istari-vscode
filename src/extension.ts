@@ -646,14 +646,15 @@ class IstariUI {
 		});
 	}
 
-	getTypeAndDefinitionForConstant(constant: string, callback: (type: string, definition: string) => void) {
-		this.getTypeForConstant(constant, (data) => {
-			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (definition) => {
-				callback(data, definition);
+	getTypeAndDefinitionForConstant(constant: string, callback: (typeAndDefinition: string) => void) {
+		// this.getTypeForConstant(constant, (data) => {
+			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (typeAndDefinition) => {
+				// callback(data, definition);
+				callback(typeAndDefinition);
 				return true;
 			});
-			return true;
-		});
+			// return true;
+		// });
 	}
 
 	sendLines(text: string) {
@@ -1006,8 +1007,8 @@ function startLSP() {
 			let itemName = item.label;
 			return new Promise((resolve, reject) => {
 				istari?.getTypeAndDefinitionForConstant(itemName + "",
-					(type, definition) => {
-						item.documentation = new vscode.MarkdownString().appendCodeblock(type + "\n" + definition, "istari");
+					(typeAndDefinition) => {
+						item.documentation = new vscode.MarkdownString().appendCodeblock(typeAndDefinition, "istari");
 						resolve(item);
 						return true;
 					}
@@ -1027,10 +1028,10 @@ function startLSP() {
 			}
 			return new Promise((resolve, reject) => {
 				istari.getTypeAndDefinitionForConstant(word, 
-					(type, definition) => {
+					(typeAndDefinition) => {
 						resolve({
 							contents: [new vscode.MarkdownString().appendCodeblock(
-								type + "\n" + definition, "istari")]
+								typeAndDefinition, "istari")]
 						});
 						return true;
 					}
