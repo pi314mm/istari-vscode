@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { dirname } from 'path';
 import path = require('path');
 import { assert, time } from 'console';
+import * as fs from 'fs';
 
 // const decorations = vscode.window.createTextEditorDecorationType({
 // 	backgroundColor: "green",
@@ -262,8 +263,13 @@ class IstariTerminal {
 		let cwd = dirname(document.fileName);
 		this.defaultCallback = onDefaultCallback;
 		this.proc = spawn(sml, ["@SMLload=" + istari], { cwd: cwd, shell: true });
-		this.proc.on('error', (err) => {
-			throw new Error(`Failed to start process: ${err.message}`);
+		if (!fs.existsSync(istari)) {
+			throw new Error("Istari not found at " + istari);
+		}
+		this.proc.on('exit', (code) => {
+			if (code !== 0) {
+				vscode.window.showWarningMessage(`SML Process exited with code ${code}`);
+			}
 		});
 		this.proc.stdout?.on('data', (data) => { 
 			this.processOutput(data);
@@ -640,14 +646,15 @@ class IstariUI {
 		});
 	}
 
-	getTypeAndDefinitionForConstant(constant: string, callback: (type: string, definition: string) => void) {
-		this.getTypeForConstant(constant, (data) => {
-			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (definition) => {
-				callback(data, definition);
+	getTypeAndDefinitionForConstant(constant: string, callback: (typeAndDefinition: string) => void) {
+		// this.getTypeForConstant(constant, (data) => {
+			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (typeAndDefinition) => {
+				// callback(data, definition);
+				callback(typeAndDefinition);
 				return true;
 			});
-			return true;
-		});
+			// return true;
+		// });
 	}
 
 	sendLines(text: string) {
@@ -1000,8 +1007,8 @@ function startLSP() {
 			let itemName = item.label;
 			return new Promise((resolve, reject) => {
 				istari?.getTypeAndDefinitionForConstant(itemName + "",
-					(type, definition) => {
-						item.documentation = new vscode.MarkdownString().appendCodeblock(type + "\n" + definition, "istari");
+					(typeAndDefinition) => {
+						item.documentation = new vscode.MarkdownString().appendCodeblock(typeAndDefinition, "istari");
 						resolve(item);
 						return true;
 					}
@@ -1021,10 +1028,10 @@ function startLSP() {
 			}
 			return new Promise((resolve, reject) => {
 				istari.getTypeAndDefinitionForConstant(word, 
-					(type, definition) => {
+					(typeAndDefinition) => {
 						resolve({
 							contents: [new vscode.MarkdownString().appendCodeblock(
-								type + "\n" + definition, "istari")]
+								typeAndDefinition, "istari")]
 						});
 						return true;
 					}
