@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { dirname } from 'path';
 import path = require('path');
 import { assert, time } from 'console';
+import * as fs from 'fs';
 
 // const decorations = vscode.window.createTextEditorDecorationType({
 // 	backgroundColor: "green",
@@ -262,8 +263,13 @@ class IstariTerminal {
 		let cwd = dirname(document.fileName);
 		this.defaultCallback = onDefaultCallback;
 		this.proc = spawn(sml, ["@SMLload=" + istari], { cwd: cwd, shell: true });
-		this.proc.on('error', (err) => {
-			throw new Error(`Failed to start process: ${err.message}`);
+		if (!fs.existsSync(istari)) {
+			throw new Error("Istari not found at " + istari);
+		}
+		this.proc.on('exit', (code) => {
+			if (code !== 0) {
+				vscode.window.showWarningMessage(`SML Process exited with code ${code}`);
+			}
 		});
 		this.proc.stdout?.on('data', (data) => { 
 			this.processOutput(data);
