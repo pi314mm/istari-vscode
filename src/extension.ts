@@ -648,7 +648,7 @@ class IstariUI {
 
 	getTypeAndDefinitionForConstant(constant: string, callback: (typeAndDefinition: string) => void) {
 		// this.getTypeForConstant(constant, (data) => {
-			this.interjectWithCallback("Report.show (parseLongident /" + constant + "/);", (typeAndDefinition) => {
+			this.interjectWithCallback("Report.show' (parseLongident /" + constant + "/);", (typeAndDefinition) => {
 				// callback(data, definition);
 				callback(typeAndDefinition);
 				return true;
