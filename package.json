@@ -71,6 +71,11 @@
           "type": "boolean",
           "default": false,
           "description": "If jump to specific line should advance line by one if already at that line"
+        },
+        "istari.mcpPort": {
+          "type": "number",
+          "default": 47821,
+          "description": "Port for the Istari MCP HTTP server (for Claude Code integration)"
         }
       }
     },
@@ -152,6 +157,35 @@
       {
         "command": "istari.showSubstitutions",
         "title": "Istari: Show Substitutions"
+      },
+      {
+        "command": "istari.startMcpServer",
+        "title": "Istari: Start MCP Server"
+      },
+      {
+        "command": "istari.stopMcpServer",
+        "title": "Istari: Stop MCP Server"
+      },
+      {
+        "command": "istari.restartMcpServer",
+        "title": "Istari: Restart MCP Server"
+      },
+      {
+        "command": "istari.installClaudeMcp",
+        "title": "Istari: Install Claude MCP (claude mcp add istari-vscode http://localhost:47821/mcp -s user -t http)"
+      },
+      {
+        "command": "istari.installCodexMcp",
+        "title": "Istari: Install Codex CLI MCP (codex mcp add -- npx mcp-remote http://localhost:47821/mcp --allow-http --transport http-only)"
+      },
+      {
+        "command": "istari.showWebview",
+        "title": "Istari: Show Webview"
+      },
+      {
+        "command": "istari.attemptTactic",
+        "title": "Istari: Attempt Tactic (Debug)",
+        "icon": "$(debug-step-into)"
       }
     ],
     "keybindings": [
@@ -254,6 +288,11 @@
         "command": "istari.showSubstitutions",
         "key": "ctrl+i c s",
         "when": "resourceLangId == istari"
+      },
+      {
+        "command": "istari.attemptTactic",
+        "key": "ctrl+i a",
+        "when": "resourceLangId == istari"
       }
     ],
     "menus": {
@@ -297,6 +336,9 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.93.0",
