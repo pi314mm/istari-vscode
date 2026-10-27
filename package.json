@@ -3,7 +3,7 @@
   "displayName": "istari",
   "description": "Istari plugin for vscode",
   "publisher": "pi314mm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "vscode": "^1.93.0"
   },
@@ -14,9 +14,6 @@
     "url": "https://github.com/pi314mm/istari-vscode"
   },
   "main": "./out/extension.js",
-  "activationEvents": [
-    "onLanguage:istari"
-  ],
   "contributes": {
     "languages": [
       {
@@ -299,16 +296,16 @@
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
-    "@types/vscode": "^1.93.0",
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.93.0",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
+    "@vscode/test-electron": "^2.1.5",
     "eslint": "^8.20.0",
     "glob": "^8.0.3",
-    "mocha": "^10.0.0",
-    "typescript": "^4.7.4",
-    "@vscode/test-electron": "^2.1.5"
+    "mocha": "^12.0.3",
+    "typescript": "^4.7.4"
   }
 }
